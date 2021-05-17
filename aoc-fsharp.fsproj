@@ -5,6 +5,7 @@
     <RootNamespace>aoc</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Utils/Geometry.fs" />
     <Compile Include="Utils/Parser.fs" />
     <Compile Include="Utils/Run.fs" />
     <Compile Include="2019/utils/Intcode.fs" />
@@ -15,6 +16,9 @@
     <Compile Include="2019/day2/Utils.fs" />
     <Compile Include="2019/day2/Part1.fs" />
     <Compile Include="2019/day2/Part2.fs" />
+    <Compile Include="2019/day3/Parser.fs" />
+    <Compile Include="2019/day3/Part1.fs" />
+    <!-- <Compile Include="2019/day3/Part2.fs" /> -->
     <Compile Include="Runner.fs" />
   </ItemGroup>
 </Project>
