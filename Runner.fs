@@ -8,13 +8,10 @@ let problems =
         exp = 3279287 }
       { label = "Day 1, Part 2"
         fn = (fun () -> aoc.year2019.day1.part2.run "input/2019/day1/puzzle.txt")
-        exp = 4916076 } ]
-
-let runProb prob =
-    let answer = prob.fn ()
-
-    if answer <> prob.exp then
-        printfn $"{prob.label} FAILED: {answer} != {prob.exp}"
+        exp = 4916076 }
+      { label = "Day 2, Part 1"
+        fn = (fun () -> aoc.year2019.day2.part1.run "input/2019/day2/puzzle.txt")
+        exp = 3101844 } ]
 
 let runAll probs =
     let total =
@@ -24,6 +21,11 @@ let runAll probs =
 
 [<EntryPoint>]
 let main argv =
+    // let problems =
+    //     [ { label = "Day 2, Part 1"
+    //         fn = (fun () -> aoc.year2019.day2.part1.run "input/2019/day2/puzzle.txt")
+    //         exp = 3101844 } ]
+
     runAll problems
 
     0 // return an integer exit code
