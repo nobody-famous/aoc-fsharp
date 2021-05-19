@@ -4,24 +4,24 @@ open utils.geometry
 
 let inRange x y z = x <= z && z <= y || x >= z && z >= y
 
-let isHoriz line = line.head.y = line.tail.y
-let isVert line = line.head.x = line.tail.x
+let isHoriz line = line.pt1.y = line.pt2.y
+let isVert line = line.pt1.x = line.pt2.x
+
+let linesCross line1 line2 =
+    inRange line1.pt1.y line1.pt2.y line2.pt1.y
+    && inRange line2.pt1.x line2.pt2.x line1.pt1.x
 
 let findLineCrosses line wire =
     List.fold
         (fun acc line2 ->
-            if isHoriz line && isVert line2 then
-                if inRange line2.head.y line2.tail.y line.head.y
-                   && inRange line.head.x line.tail.x line2.head.x then
-                    { x = line2.head.x; y = line.head.y } :: acc
-                else
-                    acc
-            else if isVert line && isHoriz line2 then
-                if inRange line2.head.x line2.tail.x line.head.x
-                   && inRange line.head.y line.tail.y line2.head.y then
-                    { x = line.head.x; y = line2.head.y } :: acc
-                else
-                    acc
+            if isHoriz line
+               && isVert line2
+               && linesCross line2 line then
+                { x = line2.pt1.x; y = line.pt1.y } :: acc
+            else if isHoriz line2
+                    && isVert line
+                    && linesCross line line2 then
+                { x = line.pt1.x; y = line2.pt1.y } :: acc
             else
                 acc)
         []

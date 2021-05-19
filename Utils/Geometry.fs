@@ -2,7 +2,7 @@ module utils.geometry
 
 type Point = { x: int; y: int }
 
-type Line = { head: Point; tail: Point }
+type Line = { pt1: Point; pt2: Point }
 
 let origin = { x = 0; y = 0 }
 

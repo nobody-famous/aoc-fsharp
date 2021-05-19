@@ -21,7 +21,7 @@ let toLines diffs =
                     { x = prevPt.x + pt.x
                       y = prevPt.y + pt.y }
 
-                (next, { head = prevPt; tail = next } :: lines))
+                (next, { pt1 = prevPt; pt2 = next } :: lines))
             ({ x = 0; y = 0 }, [])
             diffs
 

@@ -14,7 +14,13 @@ let problems =
         exp = 3101844 }
       { label = "Day 2, Part 2"
         fn = (fun () -> aoc.year2019.day2.part2.run "input/2019/day2/puzzle.txt")
-        exp = 8478 } ]
+        exp = 8478 }
+      { label = "Day 3, Part 1"
+        fn = (fun () -> aoc.year2019.day3.part1.run "input/2019/day3/puzzle.txt")
+        exp = 529 }
+      { label = "Day 3, Part 2"
+        fn = (fun () -> aoc.year2019.day3.part2.run "input/2019/day3/puzzle.txt")
+        exp = 20386 } ]
 
 let runAll probs =
     let total =
@@ -24,10 +30,10 @@ let runAll probs =
 
 [<EntryPoint>]
 let main argv =
-    let problems =
-        [ { label = "Day 3, Part 1"
-            fn = (fun () -> aoc.year2019.day3.part2.run "input/2019/day3/sample.txt")
-            exp = 529 } ]
+    // let problems =
+    //     [ { label = "Day 3, Part 1"
+    //         fn = (fun () -> aoc.year2019.day3.part2.run "input/2019/day3/puzzle.txt")
+    //         exp = 20386 } ]
 
     runAll problems
 
