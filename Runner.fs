@@ -30,10 +30,10 @@ let runAll probs =
 
 [<EntryPoint>]
 let main argv =
-    // let problems =
-    //     [ { label = "Day 3, Part 1"
-    //         fn = (fun () -> aoc.year2019.day3.part2.run "input/2019/day3/puzzle.txt")
-    //         exp = 20386 } ]
+    let problems =
+        [ { label = "Day 4, Part 1"
+            fn = (fun () -> aoc.year2019.day4.part1.run "input/2019/day4/puzzle.txt")
+            exp = 511 } ]
 
     runAll problems
 
