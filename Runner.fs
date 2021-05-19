@@ -26,7 +26,7 @@ let runAll probs =
 let main argv =
     let problems =
         [ { label = "Day 3, Part 1"
-            fn = (fun () -> aoc.year2019.day3.part1.run "input/2019/day3/puzzle.txt")
+            fn = (fun () -> aoc.year2019.day3.part2.run "input/2019/day3/sample.txt")
             exp = 529 } ]
 
     runAll problems

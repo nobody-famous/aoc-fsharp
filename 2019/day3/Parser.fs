@@ -25,7 +25,7 @@ let toLines diffs =
             ({ x = 0; y = 0 }, [])
             diffs
 
-    lines
+    List.rev lines
 
 let parseWire (line: string) =
     line.Split ','
