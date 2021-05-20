@@ -31,7 +31,7 @@ let instrLength =
     function
     | Add (_, _, _)
     | Mul (_, _, _) -> 4
-    | Inp (_) -> 2
+    | Inp (_)
     | Out (_) -> 2
     | Hlt -> 1
 
