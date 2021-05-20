@@ -4,27 +4,33 @@ open aoc.year2019.intcode
 
 type InputState = { next: int }
 
-type OutputState = { last: int }
+type OutputState = { last: int option }
 
-type machineIO =
-    { input: InputState -> (InputState * int)
-      output: (OutputState * int) -> OutputState }
+type machineState =
+    { input: InputState
+      output: OutputState }
 
-let newMachineIO inpFn outFn = { input = inpFn; output = outFn }
+let newState () =
+    { input = { next = 1 }
+      output = { last = None } }
 
 let runMachine m =
     let rec loop m = if m.halt then m else loop <| step m
 
     loop m
 
-let inputFn state = (state, state.next)
+let inputFn m =
+    let s = getState m
+    (s.input.next, m)
 
 let outputFn (state, value) = { state with last = value }
 
 let run fileName =
-    let io = newMachineIO inputFn outputFn
-
     let _ =
-        parseInput fileName |> newMachine |> runMachine
+        parseInput fileName
+        |> newMachineState (newState ())
+        |> setInputFn inputFn
+        |> setDebug true
+        |> runMachine
 
     0
