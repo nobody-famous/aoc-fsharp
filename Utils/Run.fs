@@ -1,6 +1,7 @@
 module utils.run
 
 open System
+open System.Diagnostics
 
 type 'a ToRun =
     { label: string
@@ -8,13 +9,18 @@ type 'a ToRun =
       exp: 'a }
 
 let run prob =
-    let start = DateTime.Now.Millisecond
+    let watch = new Stopwatch()
+
+    watch.Start()
+
     let answer = prob.fn ()
+
+    watch.Stop()
 
     if prob.exp <> answer then
         printfn $"{prob.label} FAILED: {answer} != {prob.exp}"
 
-    let diff = DateTime.Now.Millisecond - start
-    printfn $"{prob.label}: {diff} ms"
+    let ms = int (watch.ElapsedMilliseconds)
+    printfn $"{prob.label}: {ms} ms"
 
-    diff
+    ms
