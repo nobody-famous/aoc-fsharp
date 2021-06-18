@@ -1,20 +1,25 @@
 module utils.run
 
-open System
+open System.Diagnostics
 
-type 'a ToRun =
-    { label: string
-      fn: unit -> 'a
-      exp: 'a }
+type 'a problem =
+    { data: (int * int * int * 'a * (string -> 'a) * string) }
 
 let run prob =
-    let start = DateTime.Now.Millisecond
-    let answer = prob.fn ()
+    let watch = new Stopwatch()
 
-    if prob.exp <> answer then
-        printfn $"{prob.label} FAILED: {answer} != {prob.exp}"
+    watch.Start()
 
-    let diff = DateTime.Now.Millisecond - start
-    printfn $"{prob.label}: {diff} ms"
+    let year, day, part, exp, fn, fileName = prob.data
+    let label = $"{year} Day {day}, Part {part}"
+    let answer = fn $"input/{year}/day{day}/{fileName}"
 
-    diff
+    watch.Stop()
+
+    if exp <> answer then
+        printfn $"{label} FAILED: {answer} != {exp}"
+
+    let ms = int (watch.ElapsedMilliseconds)
+    printfn $"{label} {ms} ms"
+
+    ms
