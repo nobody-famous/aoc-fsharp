@@ -1,8 +1,12 @@
 // Learn more about F# at http://docs.microsoft.com/dotnet/fsharp
 
-module runner
+module Runner
 
 open utils.run
+
+let problems2018 =
+    [ { data = (2018, 1, 1, 437, Aoc.Year2018.Day1.Part1.run, "puzzle.txt") }
+      { data = (2018, 1, 2, 655, Aoc.Year2018.Day1.Part2.run, "puzzle.txt") } ]
 
 let problems2019 =
     [ { data = (2019, 1, 1, 3279287, aoc.year2019.day1.part1.run, "puzzle.txt") }
@@ -23,9 +27,9 @@ let runAll probs =
 
 [<EntryPoint>]
 let main argv =
-    // let problems2019 =
-    //     [ { data = (2019, 5, 1, 13294380, aoc.year2019.day5.part1.run, "puzzle.txt") } ]
+    // let problems2018 =
+    //     [ { data = (2018, 1, 2, 655, Aoc.Year2018.Day1.Part2.run, "puzzle.txt") } ]
 
-    runAll problems2019
+    runAll problems2018
 
     0 // return an integer exit code
