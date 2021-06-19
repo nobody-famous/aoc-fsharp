@@ -2,24 +2,28 @@ module utils.run
 
 open System.Diagnostics
 
-type 'a problem =
-    { data: (int * int * int * 'a * (string -> 'a) * string) }
+type problem =
+    { data: (int * int * int * (string -> unit) * string) }
 
 let run prob =
     let watch = new Stopwatch()
 
     watch.Start()
 
-    let year, day, part, exp, fn, fileName = prob.data
+    let year, day, part, fn, fileName = prob.data
     let label = $"{year} Day {day}, Part {part}"
-    let answer = fn $"input/{year}/day{day}/{fileName}"
+
+    try
+        fn $"input/{year}/day{day}/{fileName}"
+    with ex -> printfn $"{label} FAILED: {ex}"
 
     watch.Stop()
-
-    if exp <> answer then
-        printfn $"{label} FAILED: {answer} != {exp}"
 
     let ms = int (watch.ElapsedMilliseconds)
     printfn $"{label} {ms} ms"
 
     ms
+
+let checkResult (exp: 'a) (act: 'a) =
+    if exp <> act then
+        failwith $"{exp} != {act}"
