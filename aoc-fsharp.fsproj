@@ -8,6 +8,11 @@
     <Compile Include="Utils/Geometry.fs" />
     <Compile Include="Utils/Parser.fs" />
     <Compile Include="Utils/Run.fs" />
+
+    <Compile Include="2018/day1/Parser.fs" />
+    <Compile Include="2018/day1/Part1.fs" />
+    <Compile Include="2018/day1/Part2.fs" />
+
     <Compile Include="2019/utils/Intcode.fs" />
     <Compile Include="2019/day1/Parser.fs" />
     <Compile Include="2019/day1/Utils.fs" />
