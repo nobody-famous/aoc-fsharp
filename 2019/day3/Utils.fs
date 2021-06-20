@@ -1,6 +1,6 @@
 module Aoc.Year2019.Day3.Utils
 
-open Utils.Geometry
+open Aoc.Utils.Geometry
 
 let inRange x y z = x <= z && z <= y || x >= z && z >= y
 

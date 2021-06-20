@@ -1,6 +1,6 @@
 module Aoc.Year2019.Day3.Parser
 
-open Utils.Geometry
+open Aoc.Utils.Geometry
 
 let parseDir (str: string) =
     let turn = str.[0]
@@ -30,5 +30,5 @@ let toLines diffs =
 let parseWire (line: string) = line.Split ',' |> Array.map parseDir
 
 let parseInput fileName =
-    Utils.Parser.readLines fileName
+    Aoc.Utils.Parser.readLines fileName
     |> Array.map (parseWire >> toLines)

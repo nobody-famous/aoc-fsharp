@@ -1,6 +1,6 @@
 module Aoc.Year2019.Day3.Part1
 
-open Utils.Geometry
+open Aoc.Utils.Geometry
 
 let run fileName =
     let wires = Parser.parseInput fileName

@@ -8,6 +8,6 @@ let parseRange (line: string) =
             |> Array.map (fun ch -> int ch - int '0'))
 
 let parseInput fileName =
-    Utils.Parser.readLines fileName
-    |> Utils.Parser.grabFirst
+    Aoc.Utils.Parser.readLines fileName
+    |> Aoc.Utils.Parser.grabFirst
     |> parseRange

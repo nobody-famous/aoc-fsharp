@@ -1,4 +1,4 @@
-module Utils.Geometry
+module Aoc.Utils.Geometry
 
 type Point = { X: int; Y: int }
 

@@ -41,4 +41,4 @@ let run exp fileName =
     |> Array.sort
     |> findIds 1
     |> removeDiff
-    |> Utils.Run.checkResult exp
+    |> Aoc.Utils.Run.checkResult exp

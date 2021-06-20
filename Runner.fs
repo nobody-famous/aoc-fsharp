@@ -2,7 +2,7 @@
 
 module Runner
 
-open Utils.Run
+open Aoc.Utils.Run
 
 let problems2018 =
     [ { Data = (2018, 1, 1, Aoc.Year2018.Day1.Part1.run 437, "puzzle.txt") }

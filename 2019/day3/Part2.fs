@@ -2,7 +2,7 @@ module Aoc.Year2019.Day3.Part2
 
 open System.Collections.Generic
 open System.Threading.Tasks
-open Utils.Geometry
+open Aoc.Utils.Geometry
 
 let onLine line pt =
     (Utils.isHoriz line

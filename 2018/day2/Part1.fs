@@ -30,4 +30,4 @@ let run exp fileName =
                  sumThrees))
         (0, 0)
     |> multTuple
-    |> Utils.Run.checkResult exp
+    |> Aoc.Utils.Run.checkResult exp

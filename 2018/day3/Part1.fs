@@ -1,6 +1,6 @@
 module Aoc.Year2018.Day3.Part1
 
-open Utils.Geometry
+open Aoc.Utils.Geometry
 
 let addToGrid (grid: System.Int32 [,]) (rect: Parser.Rectangle) =
     for row in rect.Loc.Y .. rect.Loc.Y + rect.Dims.Height - 1 do
@@ -55,4 +55,4 @@ let run exp fileName =
     Parser.parseInput fileName
     |> createGrid
     |> countMultiples
-    |> Utils.Run.checkResult exp
+    |> Aoc.Utils.Run.checkResult exp

@@ -1,4 +1,4 @@
-module Utils.Run
+module Aoc.Utils.Run
 
 open System.Diagnostics
 

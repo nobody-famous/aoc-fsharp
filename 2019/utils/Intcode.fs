@@ -2,7 +2,7 @@ module Aoc.Year2019.Intcode
 
 let parseInput fileName =
     let lines =
-        Utils.Parser.readLines fileName
+        Aoc.Utils.Parser.readLines fileName
         |> Array.map (fun (line: string) -> line.Split ',' |> Array.map (int))
 
     lines.[0]

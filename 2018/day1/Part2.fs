@@ -17,4 +17,4 @@ let findDupes (input: int array) =
 let run exp fileName =
     Parser.parseInput fileName
     |> findDupes
-    |> Utils.Run.checkResult exp
+    |> Aoc.Utils.Run.checkResult exp

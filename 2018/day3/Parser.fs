@@ -1,6 +1,6 @@
 module Aoc.Year2018.Day3.Parser
 
-open Utils.Geometry
+open Aoc.Utils.Geometry
 
 type Dimensions = { Width: int; Height: int }
 
@@ -30,5 +30,5 @@ let parseRect (line: string) =
       Dims = parseDims rectParts.[1] }
 
 let parseInput fileName =
-    Utils.Parser.readLines fileName
+    Aoc.Utils.Parser.readLines fileName
     |> Array.map parseRect
