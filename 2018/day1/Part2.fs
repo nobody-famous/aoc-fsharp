@@ -17,4 +17,4 @@ let findDupes (input: int array) =
 let run exp fileName =
     Parser.parseInput fileName
     |> findDupes
-    |> utils.run.checkResult exp
+    |> Utils.Run.checkResult exp

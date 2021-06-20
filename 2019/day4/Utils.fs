@@ -1,4 +1,4 @@
-module aoc.year2019.day4.utils
+module Aoc.Year2019.Day4.Utils
 
 let splitInput (input: int array array) = (input.[0], input.[1])
 

@@ -30,4 +30,4 @@ let run exp fileName =
                  sumThrees))
         (0, 0)
     |> multTuple
-    |> utils.run.checkResult exp
+    |> Utils.Run.checkResult exp

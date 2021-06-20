@@ -9,5 +9,5 @@ let parseChange (line: string) =
     | _ -> failwith $"Invalid sign {line.[0]}"
 
 let parseInput fileName =
-    utils.parser.readLines fileName
+    Utils.Parser.readLines fileName
     |> Array.map parseChange

@@ -1,16 +1,16 @@
-module aoc.year2019.day3.parser
+module Aoc.Year2019.Day3.Parser
 
-open utils.geometry
+open Utils.Geometry
 
 let parseDir (str: string) =
     let turn = str.[0]
     let dist = str.Substring 1 |> int
 
     match turn with
-    | 'R' -> { x = dist; y = 0 }
-    | 'L' -> { x = -dist; y = 0 }
-    | 'U' -> { x = 0; y = dist }
-    | 'D' -> { x = 0; y = -dist }
+    | 'R' -> { X = dist; Y = 0 }
+    | 'L' -> { X = -dist; Y = 0 }
+    | 'U' -> { X = 0; Y = dist }
+    | 'D' -> { X = 0; Y = -dist }
     | _ -> raise <| System.Exception $"Unhandled input {str}"
 
 let toLines diffs =
@@ -18,19 +18,17 @@ let toLines diffs =
         Array.fold
             (fun (prevPt, lines) pt ->
                 let next =
-                    { x = prevPt.x + pt.x
-                      y = prevPt.y + pt.y }
+                    { X = prevPt.X + pt.X
+                      Y = prevPt.Y + pt.Y }
 
-                (next, { pt1 = prevPt; pt2 = next } :: lines))
-            ({ x = 0; y = 0 }, [])
+                (next, { Pt1 = prevPt; Pt2 = next } :: lines))
+            ({ X = 0; Y = 0 }, [])
             diffs
 
     List.rev lines
 
-let parseWire (line: string) =
-    line.Split ','
-    |> Array.map (fun item -> parseDir item)
+let parseWire (line: string) = line.Split ',' |> Array.map parseDir
 
 let parseInput fileName =
-    utils.parser.readLines fileName
-    |> Array.map (fun line -> parseWire line |> toLines)
+    Utils.Parser.readLines fileName
+    |> Array.map (parseWire >> toLines)

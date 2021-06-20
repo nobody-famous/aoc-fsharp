@@ -1,5 +1,4 @@
-module aoc.year2019.day1.parser
+module Aoc.Year2019.Day1.Parser
 
 let parseInput fileName =
-    utils.parser.readLines fileName
-    |> Array.map (fun line -> int line)
+    Utils.Parser.readLines fileName |> Array.map int

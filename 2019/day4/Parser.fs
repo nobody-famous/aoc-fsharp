@@ -1,4 +1,4 @@
-module aoc.year2019.day4.parser
+module Aoc.Year2019.Day4.Parser
 
 let parseRange (line: string) =
     line.Split '-'
@@ -8,6 +8,6 @@ let parseRange (line: string) =
             |> Array.map (fun ch -> int ch - int '0'))
 
 let parseInput fileName =
-    utils.parser.readLines fileName
-    |> utils.parser.grabFirst
+    Utils.Parser.readLines fileName
+    |> Utils.Parser.grabFirst
     |> parseRange

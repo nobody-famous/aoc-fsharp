@@ -41,4 +41,4 @@ let run exp fileName =
     |> Array.sort
     |> findIds 1
     |> removeDiff
-    |> utils.run.checkResult exp
+    |> Utils.Run.checkResult exp

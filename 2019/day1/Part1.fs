@@ -1,8 +1,8 @@
-module aoc.year2019.day1.part1
+module Aoc.Year2019.Day1.Part1
 
 open System.Threading.Tasks
 
 let run fileName =
-    parser.parseInput fileName
-    |> Array.map (fun n -> async { return utils.fuel n } |> Async.StartAsTask)
+    Parser.parseInput fileName
+    |> Array.map (fun n -> async { return Utils.fuel n } |> Async.StartAsTask)
     |> Array.fold (fun acc (t: Task<int>) -> acc + t.Result) 0

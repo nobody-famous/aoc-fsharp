@@ -1,4 +1,4 @@
-module aoc.year2019.day4.part2
+module Aoc.Year2019.Day4.Part2
 
 let isValid (arr: int array) =
     let rec loop ndx count =
@@ -14,7 +14,7 @@ let isValid (arr: int array) =
     loop 1 1
 
 let run fileName =
-    parser.parseInput fileName
-    |> utils.splitInput
-    |> utils.findFirst
-    |> utils.countValid isValid
+    Parser.parseInput fileName
+    |> Utils.splitInput
+    |> Utils.findFirst
+    |> Utils.countValid isValid

@@ -1,4 +1,4 @@
-module utils.parser
+module Utils.Parser
 
 open System.IO
 

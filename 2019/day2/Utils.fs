@@ -1,8 +1,8 @@
-module aoc.year2019.day2.utils
+module Aoc.Year2019.Day2.Utils
 
-open aoc.year2019.intcode
+open Aoc.Year2019.Intcode
 
 let runMachine mach =
-    let rec loop m = if m.halt then m else loop <| step m
+    let rec loop m = if m.Halt then m else loop <| step m
 
     loop mach

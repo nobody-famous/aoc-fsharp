@@ -2,14 +2,14 @@
 
 module Runner
 
-open utils.run
+open Utils.Run
 
 let problems2018 =
-    [ { data = (2018, 1, 1, Aoc.Year2018.Day1.Part1.run 437, "puzzle.txt") }
-      { data = (2018, 1, 2, Aoc.Year2018.Day1.Part2.run 655, "puzzle.txt") }
-      { data = (2018, 2, 1, Aoc.Year2018.Day2.Part1.run 6225, "puzzle.txt") }
-      { data = (2018, 2, 1, Aoc.Year2018.Day2.Part2.run "revtaubfniyhsgxdoajwkqilp", "puzzle.txt") }
-      { data = (2018, 3, 1, Aoc.Year2018.Day3.Part1.run 118858, "puzzle.txt") } ]
+    [ { Data = (2018, 1, 1, Aoc.Year2018.Day1.Part1.run 437, "puzzle.txt") }
+      { Data = (2018, 1, 2, Aoc.Year2018.Day1.Part2.run 655, "puzzle.txt") }
+      { Data = (2018, 2, 1, Aoc.Year2018.Day2.Part1.run 6225, "puzzle.txt") }
+      { Data = (2018, 2, 1, Aoc.Year2018.Day2.Part2.run "revtaubfniyhsgxdoajwkqilp", "puzzle.txt") }
+      { Data = (2018, 3, 1, Aoc.Year2018.Day3.Part1.run 118858, "puzzle.txt") } ]
 
 // let problems2019 =
 //     [ { data = (2019, 1, 1, 3279287, aoc.year2019.day1.part1.run, "puzzle.txt") }
