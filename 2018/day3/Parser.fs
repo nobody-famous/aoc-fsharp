@@ -1,13 +1,7 @@
 module Aoc.Year2018.Day3.Parser
 
 open Aoc.Utils.Geometry
-
-type Dimensions = { Width: int; Height: int }
-
-type Rectangle =
-    { Id: int
-      Loc: Point
-      Dims: Dimensions }
+open Aoc.Year2018.Day3.Utils
 
 let parseId (str: string) = str.Trim().Substring(1) |> int
 
