@@ -1,5 +1,6 @@
 module Aoc.Year2018.Day4.Parser
 
+open System.Collections.Generic
 open System.Text.RegularExpressions
 open Aoc.Year2018.Day4.Utils
 
@@ -89,7 +90,33 @@ let compareEntries entry1 entry2 =
 
     compareDates date1 date2
 
+let addToTable (table: Dictionary<int, GuardEntry list>) id entry =
+    if not (table.ContainsKey id) then
+        table.[id] <- []
+
+    table.[id] <- entry :: table.[id]
+
+let buildTable (entries: Entry array) =
+    let table = Dictionary<int, GuardEntry list>()
+
+    let rec loop ndx curId curStart =
+        if ndx < Array.length entries then
+            match entries.[ndx] with
+            | StartShift (date, id) -> loop (ndx + 1) id None
+            | Sleep (date) -> loop (ndx + 1) curId (Some date)
+            | Wake (date) ->
+                match curStart with
+                | None -> failwith "Wake with no sleep"
+                | Some s -> addToTable table curId { Start = s; End = date }
+
+                loop (ndx + 1) curId curStart
+
+    loop 0 0 None
+
+    table
+
 let parseInput fileName =
     Aoc.Utils.Parser.readLines fileName
     |> Array.map getEntry
     |> Array.sortWith compareEntries
+    |> buildTable

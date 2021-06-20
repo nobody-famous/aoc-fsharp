@@ -11,3 +11,5 @@ type Entry =
     | StartShift of DateEntry * int
     | Sleep of DateEntry
     | Wake of DateEntry
+
+type GuardEntry = { Start: DateEntry; End: DateEntry }
