@@ -33,10 +33,9 @@ let mostMinutes (minuteMap: Dictionary<int, int array>) =
     let id, _ =
         minuteMap
         |> Seq.toList
+        |> Seq.map (fun (KeyValue (id, minutes)) -> (id, Array.sum minutes))
         |> Seq.fold
-            (fun (curId, curHigh) (KeyValue (id, minutes)) ->
-                let count = Array.sum minutes
-
+            (fun (curId, curHigh) (id, count) ->
                 if count > curHigh then
                     (id, count)
                 else
