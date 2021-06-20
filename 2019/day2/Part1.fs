@@ -1,11 +1,11 @@
-module aoc.year2019.day2.part1
+module Aoc.Year2019.Day2.Part1
 
-open aoc.year2019.intcode
+open Aoc.Year2019.Intcode
 
 let run fileName =
     parseInput fileName
     |> newMachine
     |> setAddr 1 12
     |> setAddr 2 2
-    |> utils.runMachine
+    |> Utils.runMachine
     |> getAddr 0

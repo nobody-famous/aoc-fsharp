@@ -1,24 +1,24 @@
-module aoc.year2019.day5.part1
+module Aoc.Year2019.Day5.Part1
 
-open aoc.year2019.intcode
+open Aoc.Year2019.Intcode
 
-type machineState = { next: int; last: int option }
+type MachineState = { Next: int; Last: int option }
 
-let newState () = { next = 1; last = None }
+let newState () = { Next = 1; Last = None }
 
 let runMachine m =
-    let rec loop m = if m.halt then m else loop <| step m
+    let rec loop m = if m.Halt then m else loop <| step m
 
     loop m
 
 let inputFn m =
     let s = getState m
-    (s.next, m)
+    (s.Next, m)
 
 let outputFn value m =
-    setState { getState m with last = Some value } m
+    setState { getState m with Last = Some value } m
 
-let getLastOutput state = state.last
+let getLastOutput state = state.Last
 
 let run fileName =
     let out =

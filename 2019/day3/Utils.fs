@@ -1,15 +1,15 @@
-module aoc.year2019.day3.utils
+module Aoc.Year2019.Day3.Utils
 
-open utils.geometry
+open Aoc.Utils.Geometry
 
 let inRange x y z = x <= z && z <= y || x >= z && z >= y
 
-let isHoriz line = line.pt1.y = line.pt2.y
-let isVert line = line.pt1.x = line.pt2.x
+let isHoriz line = line.Pt1.Y = line.Pt2.Y
+let isVert line = line.Pt1.X = line.Pt2.X
 
 let linesCross line1 line2 =
-    inRange line1.pt1.y line1.pt2.y line2.pt1.y
-    && inRange line2.pt1.x line2.pt2.x line1.pt1.x
+    inRange line1.Pt1.Y line1.Pt2.Y line2.Pt1.Y
+    && inRange line2.Pt1.X line2.Pt2.X line1.Pt1.X
 
 let findLineCrosses line wire =
     List.fold
@@ -17,11 +17,11 @@ let findLineCrosses line wire =
             if isHoriz line
                && isVert line2
                && linesCross line2 line then
-                { x = line2.pt1.x; y = line.pt1.y } :: acc
+                { X = line2.Pt1.X; Y = line.Pt1.Y } :: acc
             else if isHoriz line2
                     && isVert line
                     && linesCross line line2 then
-                { x = line.pt1.x; y = line2.pt1.y } :: acc
+                { X = line.Pt1.X; Y = line2.Pt1.Y } :: acc
             else
                 acc)
         []

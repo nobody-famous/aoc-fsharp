@@ -1,21 +1,22 @@
-module utils.run
+module Aoc.Utils.Run
 
 open System.Diagnostics
 
-type problem =
-    { data: (int * int * int * (string -> unit) * string) }
+type Problem =
+    { Data: (int * int * int * (string -> unit) * string) }
 
 let run prob =
-    let watch = new Stopwatch()
+    let watch = Stopwatch()
 
     watch.Start()
 
-    let year, day, part, fn, fileName = prob.data
+    let year, day, part, fn, fileName = prob.Data
     let label = $"{year} Day {day}, Part {part}"
 
     try
         fn $"input/{year}/day{day}/{fileName}"
-    with ex -> printfn $"{label} FAILED: {ex}"
+    with
+    | ex -> printfn $"{label} FAILED: {ex}"
 
     watch.Stop()
 

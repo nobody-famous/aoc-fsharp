@@ -1,4 +1,4 @@
-module utils.parser
+module Aoc.Utils.Parser
 
 open System.IO
 

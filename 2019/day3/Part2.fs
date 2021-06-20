@@ -1,16 +1,16 @@
-module aoc.year2019.day3.part2
+module Aoc.Year2019.Day3.Part2
 
 open System.Collections.Generic
 open System.Threading.Tasks
-open utils.geometry
+open Aoc.Utils.Geometry
 
 let onLine line pt =
-    (utils.isHoriz line
-     && pt.y = line.pt1.y
-     && utils.inRange line.pt1.x line.pt2.x pt.x)
-    || (utils.isVert line
-        && pt.x = line.pt1.x
-        && utils.inRange line.pt1.y line.pt2.y pt.y)
+    (Utils.isHoriz line
+     && pt.Y = line.Pt1.Y
+     && Utils.inRange line.Pt1.X line.Pt2.X pt.X)
+    || (Utils.isVert line
+        && pt.X = line.Pt1.X
+        && Utils.inRange line.Pt1.Y line.Pt2.Y pt.Y)
 
 let walkWire crosses wire =
     let steps = new Dictionary<Point, int>()
@@ -22,10 +22,10 @@ let walkWire crosses wire =
             List.iter
                 (fun pt ->
                     if onLine line pt then
-                        steps.Add(pt, (dist + manDist line.pt1 pt)))
+                        steps.Add(pt, (dist + manDist line.Pt1 pt)))
                 crosses
 
-            loop rest (dist + manDist line.pt1 line.pt2)
+            loop rest (dist + manDist line.Pt1 line.Pt2)
 
     loop wire 0
 
@@ -51,9 +51,9 @@ let findLowest ((dists1: Dictionary<Point, int>), (dists2: Dictionary<Point, int
 let getTaskResults (tasks: list<Task<Dictionary<Point, int>>>) = (tasks.[0].Result, tasks.[1].Result)
 
 let run fileName =
-    let wires = parser.parseInput fileName
+    let wires = Parser.parseInput fileName
 
-    utils.findAllCrosses wires.[0] wires.[1]
+    Utils.findAllCrosses wires.[0] wires.[1]
     |> startWalkTasks wires.[0] wires.[1]
     |> getTaskResults
     |> findLowest

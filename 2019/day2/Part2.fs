@@ -1,28 +1,28 @@
-module aoc.year2019.day2.part2
+module Aoc.Year2019.Day2.Part2
 
 open System.Threading.Tasks
-open aoc.year2019.intcode
+open Aoc.Year2019.Intcode
 
 type MachTask =
-    { noun: int
-      verb: int
-      task: Task<int> }
+    { Noun: int
+      Verb: int
+      Task: Task<int> }
 
 let runCombo prog noun verb =
     prog
     |> newMachine
     |> setAddr 1 noun
     |> setAddr 2 verb
-    |> utils.runMachine
+    |> Utils.runMachine
     |> getAddr 0
 
 let getVerbTasks prog noun =
     Array.init
         100
         (fun verb ->
-            { noun = noun
-              verb = verb
-              task =
+            { Noun = noun
+              Verb = verb
+              Task =
                   async { return runCombo prog noun verb }
                   |> Async.StartAsTask })
 
@@ -35,8 +35,8 @@ let findGroupTarget target group =
             match acc' with
             | Some v -> Some v
             | None ->
-                if entry.task.Result = target then
-                    Some(entry.noun, entry.verb)
+                if entry.Task.Result = target then
+                    Some(entry.Noun, entry.Verb)
                 else
                     None)
         None
