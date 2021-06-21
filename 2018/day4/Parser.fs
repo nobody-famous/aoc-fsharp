@@ -115,8 +115,25 @@ let buildTable (entries: Entry array) =
 
     table
 
+let addMinutes (minutes: Dictionary<int, int array>) id (entry: GuardEntry) =
+    if not (minutes.ContainsKey id) then
+        minutes.[id] <- Array.init 60 (fun n -> 0)
+
+    for minute in entry.Start.Minute .. entry.End.Minute - 1 do
+        minutes.[id].[minute] <- minutes.[id].[minute] + 1
+
+let tableToMinutes (table: Dictionary<int, GuardEntry list>) =
+    let minutes = Dictionary<int, int array>()
+
+    table
+    |> Seq.toList
+    |> Seq.iter (fun (KeyValue (id, entries)) -> List.iter (fun entry -> addMinutes minutes id entry) entries)
+
+    minutes
+
 let parseInput fileName =
     Aoc.Utils.Parser.readLines fileName
     |> Array.map getEntry
     |> Array.sortWith compareEntries
     |> buildTable
+    |> tableToMinutes
