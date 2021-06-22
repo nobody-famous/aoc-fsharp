@@ -32,6 +32,10 @@
     <Compile Include="2018/day5/Part1.fs" />
     <Compile Include="2018/day5/Part2.fs" />
 
+    <Compile Include="2018/day6/Parser.fs" />
+    <Compile Include="2018/day6/Part1.fs" />
+    <Compile Include="2018/day6/Part2.fs" />
+
     <Compile Include="2019/utils/Intcode.fs" />
     <Compile Include="2019/day1/Parser.fs" />
     <Compile Include="2019/day1/Utils.fs" />
