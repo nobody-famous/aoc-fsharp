@@ -14,7 +14,7 @@ let problems2018 =
       { Data = (2018, 4, 1, Aoc.Year2018.Day4.Part1.run 39698, "puzzle.txt") }
       { Data = (2018, 4, 2, Aoc.Year2018.Day4.Part2.run 14920, "puzzle.txt") }
       { Data = (2018, 5, 1, Aoc.Year2018.Day5.Part1.run 11590, "puzzle.txt") }
-      { Data = (2018, 5, 1, Aoc.Year2018.Day5.Part2.run 4504, "puzzle.txt") } ]
+      { Data = (2018, 5, 2, Aoc.Year2018.Day5.Part2.run 4504, "puzzle.txt") } ]
 
 // let problems2019 =
 //     [ { data = (2019, 1, 1, 3279287, aoc.year2019.day1.part1.run, "puzzle.txt") }
@@ -35,8 +35,8 @@ let runAll probs =
 
 [<EntryPoint>]
 let main argv =
-    // let problems2018 =
-    //     [ { Data = (2018, 5, 1, Aoc.Year2018.Day5.Part2.run 11590, "puzzle.txt") } ]
+    let problems2018 =
+        [ { Data = (2018, 6, 1, Aoc.Year2018.Day6.Part1.run 11590, "sample.txt") } ]
 
     runAll problems2018
 
