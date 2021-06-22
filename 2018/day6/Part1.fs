@@ -1,6 +1,15 @@
 module Aoc.Year2018.Day6.Part1
 
+open System.Collections.Generic
 open Aoc.Utils.Geometry
+
+type GridBounds = { MinPt: Point; MaxPt: Point }
+
+type Grid =
+    { Bounds: GridBounds
+      Cells: Point option [,] }
+
+let createBounds minPt maxPt = { MinPt = minPt; MaxPt = maxPt }
 
 let closest point points =
     let candidates =
@@ -18,30 +27,73 @@ let closest point points =
     | 1 -> Some candidates.[0]
     | _ -> None
 
-let fillGrid points =
-    let (minPt, maxPt) = findBounds points
-
+let fillGrid points bounds =
     let grid =
-        Array2D.init (maxPt.X + 1) (maxPt.Y + 1) (fun _ _ -> None)
+        Array2D.init (bounds.MaxPt.X + 1) (bounds.MaxPt.Y + 1) (fun _ _ -> None)
 
-    for y in minPt.Y .. maxPt.Y do
-        for x in minPt.X .. maxPt.X do
+    for y in bounds.MinPt.Y .. bounds.MaxPt.Y do
+        for x in bounds.MinPt.X .. bounds.MaxPt.X do
             match closest { X = x; Y = y } points with
             | Some pt -> grid.[x, y] <- Some pt
             | None -> ()
 
     grid
 
-let printGrid grid =
-    for y in 0 .. Array2D.length2 grid - 1 do
-        for x in 0 .. Array2D.length1 grid - 1 do
-            match grid.[x, y] with
-            | Some pt -> printf $" ({pt.X},{pt.Y})"
-            | None -> printf "      "
+let createGrid points =
+    let bounds = findBounds points ||> createBounds
+    let cells = fillGrid points bounds
 
-        printfn ""
+    { Bounds = bounds; Cells = cells }
+
+let findInfinite grid =
+    let infinite = Dictionary<Point, bool>()
+
+    for x in grid.Bounds.MinPt.X .. grid.Bounds.MaxPt.X do
+        match grid.Cells.[x, grid.Bounds.MinPt.Y] with
+        | None -> ()
+        | Some pt -> infinite.[pt] <- true
+
+        match grid.Cells.[x, grid.Bounds.MaxPt.Y] with
+        | None -> ()
+        | Some pt -> infinite.[pt] <- true
+
+    for y in grid.Bounds.MinPt.Y .. grid.Bounds.MaxPt.Y do
+        match grid.Cells.[grid.Bounds.MinPt.X, y] with
+        | None -> ()
+        | Some pt -> infinite.[pt] <- true
+
+        match grid.Cells.[grid.Bounds.MaxPt.X, y] with
+        | None -> ()
+        | Some pt -> infinite.[pt] <- true
+
+    infinite
+
+let incAreasEntry (areas: Dictionary<Point, int>) key =
+    if areas.ContainsKey key then
+        areas.[key] <- areas.[key] + 1
+    else
+        areas.[key] <- 1
+
+let findAreas grid (infinite: Dictionary<Point, bool>) =
+    let areas = Dictionary<Point, int>()
+
+    for x in grid.Bounds.MinPt.X .. grid.Bounds.MaxPt.X do
+        for y in grid.Bounds.MinPt.Y .. grid.Bounds.MaxPt.Y do
+            match grid.Cells.[x, y] with
+            | Some pt when not (infinite.ContainsKey pt) -> incAreasEntry areas pt
+            | None
+            | _ -> ()
+
+    areas
+
+let maxArea (areas: Dictionary<Point, int>) =
+    Seq.toList areas
+    |> Seq.fold (fun high (KeyValue (_, area)) -> if area > high then area else high) 0
 
 let run exp fileName =
-    Parser.parseInput fileName
-    |> fillGrid
-    |> printGrid
+    let grid = Parser.parseInput fileName |> createGrid
+
+    findInfinite grid
+    |> findAreas grid
+    |> maxArea
+    |> Aoc.Utils.Run.checkResult exp
