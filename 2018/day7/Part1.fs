@@ -13,9 +13,9 @@ let getNextNode graph =
 
 let getPath (graph: Graph) =
     let rec loop path =
-        match graph.Parents.Count with
-        | c when c = 0 -> path
-        | _ ->
+        if graph.Parents.Count = 0 then
+            path
+        else
             let node = getNextNode graph
 
             graph.Parents.Remove node |> ignore
