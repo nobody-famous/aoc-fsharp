@@ -2,14 +2,12 @@ module Aoc.Year2018.Day7.Part1
 
 open Aoc.Year2018.Day7.Utils
 
-let lessThan ch1 ch2 = int ch1 < int ch2
-
 let getNextNode graph =
     Seq.toList graph.Parents
     |> List.fold
         (fun next (KeyValue (cur, count)) ->
             match count with
-            | c when c = 0 -> if lessThan cur next then cur else next
+            | 0 -> System.Math.Min(int cur, int next) |> char
             | _ -> next)
         'Z'
 
