@@ -20,6 +20,9 @@ let buildGraph entries =
           Parents = Dictionary<char, int>() }
 
     let addToGraph node =
+        if not (graph.Parents.ContainsKey node.Parent) then
+            graph.Parents.[node.Parent] <- 0
+
         if not (graph.Parents.ContainsKey node.Child) then
             graph.Parents.[node.Child] <- 1
         else
