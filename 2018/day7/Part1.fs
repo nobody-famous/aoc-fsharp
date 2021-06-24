@@ -2,15 +2,6 @@ module Aoc.Year2018.Day7.Part1
 
 open Aoc.Year2018.Day7.Utils
 
-let getNextNode graph =
-    Seq.toList graph.Parents
-    |> List.fold
-        (fun next (KeyValue (cur, count)) ->
-            match count with
-            | 0 -> System.Math.Min(int cur, int next) |> char
-            | _ -> next)
-        'Z'
-
 let getPath (graph: Graph) =
     let rec loop path =
         if graph.Parents.Count = 0 then
@@ -25,9 +16,10 @@ let getPath (graph: Graph) =
 
             loop (node :: path)
 
-    loop [] |> List.rev |> System.String.Concat
+    loop [] |> List.rev
 
 let run exp fileName =
     Parser.parseInput fileName
     |> getPath
+    |> System.String.Concat
     |> Aoc.Utils.Run.checkResult exp

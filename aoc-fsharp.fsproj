@@ -40,6 +40,7 @@
     <Compile Include="2018/day7/Utils.fs" />
     <Compile Include="2018/day7/Parser.fs" />
     <Compile Include="2018/day7/Part1.fs" />
+    <Compile Include="2018/day7/Part2.fs" />
 
     <Compile Include="2019/utils/Intcode.fs" />
     <Compile Include="2019/day1/Parser.fs" />
