@@ -17,16 +17,20 @@ let parseLine line =
 let buildGraph entries =
     let graph =
         { Tree = Dictionary<char, char list>()
-          Parents = Dictionary<char, int>() }
+          Parents = Dictionary<char, int>()
+          ParentNodes = Dictionary<char, char list>() }
 
     let addToGraph node =
         if not (graph.Parents.ContainsKey node.Parent) then
             graph.Parents.[node.Parent] <- 0
+            graph.ParentNodes.[node.Parent] <- []
 
         if not (graph.Parents.ContainsKey node.Child) then
             graph.Parents.[node.Child] <- 1
+            graph.ParentNodes.[node.Child] <- [ node.Parent ]
         else
             graph.Parents.[node.Child] <- graph.Parents.[node.Child] + 1
+            graph.ParentNodes.[node.Child] <- node.Parent :: graph.ParentNodes.[node.Child]
 
         if not (graph.Tree.ContainsKey node.Parent) then
             graph.Tree.[node.Parent] <- []

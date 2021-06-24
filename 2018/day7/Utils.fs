@@ -6,7 +6,8 @@ type Node = { Parent: char; Child: char }
 
 type Graph =
     { Tree: Dictionary<char, char list>
-      Parents: Dictionary<char, int> }
+      Parents: Dictionary<char, int>
+      ParentNodes: Dictionary<char, char list> }
 
 let getNextNode graph =
     Seq.toList graph.Parents
