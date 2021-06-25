@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="Utils/Geometry.fs" />
     <Compile Include="Utils/Parser.fs" />
+    <Compile Include="Utils/Regex.fs" />
     <Compile Include="Utils/Run.fs" />
 
     <Compile Include="2018/day1/Parser.fs" />
@@ -35,6 +36,11 @@
     <Compile Include="2018/day6/Parser.fs" />
     <Compile Include="2018/day6/Part1.fs" />
     <Compile Include="2018/day6/Part2.fs" />
+
+    <Compile Include="2018/day7/Utils.fs" />
+    <Compile Include="2018/day7/Parser.fs" />
+    <Compile Include="2018/day7/Part1.fs" />
+    <Compile Include="2018/day7/Part2.fs" />
 
     <Compile Include="2019/utils/Intcode.fs" />
     <Compile Include="2019/day1/Parser.fs" />

@@ -1,8 +1,8 @@
 module Aoc.Year2018.Day4.Parser
 
 open System.Collections.Generic
-open System.Text.RegularExpressions
 open Aoc.Year2018.Day4.Utils
+open Aoc.Utils.Regex
 
 let dateRegex =
     @"\[([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2})\]"
@@ -15,17 +15,9 @@ let startShiftRegex = $"{dateRegex} {shiftRegex}"
 let fallAsleepRegex = $"{dateRegex} {sleepRegex}"
 let wakeUpRegex = $"{dateRegex} {wakeRegex}"
 
-let (|LogEntry|_|) pattern input =
-    let m = Regex.Match(input, pattern)
-
-    if m.Success then
-        Some(List.tail [ for g in m.Groups -> g.Value ])
-    else
-        None
-
 let getEntry line =
     match line with
-    | LogEntry startShiftRegex [ year; month; day; hour; minute; guard ] ->
+    | MatchPattern startShiftRegex [ year; month; day; hour; minute; guard ] ->
         StartShift(
             { Year = int year
               Month = int month
@@ -34,7 +26,7 @@ let getEntry line =
               Minute = int minute },
             int guard
         )
-    | LogEntry fallAsleepRegex [ year; month; day; hour; minute ] ->
+    | MatchPattern fallAsleepRegex [ year; month; day; hour; minute ] ->
         Sleep(
             { Year = int year
               Month = int month
@@ -42,7 +34,7 @@ let getEntry line =
               Hour = int hour
               Minute = int minute }
         )
-    | LogEntry wakeUpRegex [ year; month; day; hour; minute ] ->
+    | MatchPattern wakeUpRegex [ year; month; day; hour; minute ] ->
         Wake(
             { Year = int year
               Month = int month
