@@ -1,3 +1,9 @@
 module Aoc.Year2018.Day8.Part2
 
-let run exp fileName = Parser.parseInput fileName |> ignore
+open Aoc.Year2018.Day8.Utils
+
+let run exp fileName =
+    Parser.parseInput fileName
+    |> Array.toList
+    |> parseTree
+    |> ignore
