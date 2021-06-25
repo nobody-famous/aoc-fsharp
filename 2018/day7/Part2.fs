@@ -1,14 +1,23 @@
 module Aoc.Year2018.Day7.Part2
 
+open System.Collections.Generic
 open Aoc.Year2018.Day7.Utils
 
-let stepSize = 0
+let stepSize = 60
+let numWorkers = 5
 let steps ch = int ch - int 'A' + 1 + stepSize
 
 type WorkItem = { Step: char; Count: int }
 
-let workers : WorkItem array =
-    Array.init 5 (fun _ -> { Step = '0'; Count = 0 })
+type State =
+    { Workers: WorkItem array
+      Layout: Graph
+      Placed: Dictionary<char, int> }
+
+let newState graph =
+    { Workers = Array.init numWorkers (fun _ -> { Step = '0'; Count = 0 })
+      Layout = graph
+      Placed = Dictionary<char, int>() }
 
 let getNextNodes graph =
     Seq.toList graph.Parents
@@ -19,7 +28,9 @@ let getNextNodes graph =
             | _ -> nodes)
         []
 
-let addWorkItem workers graph item =
+let addWorkItem state item =
+    let workers = state.Workers
+
     let nextAvailableNdx () =
         let mutable ndx = 0
 
@@ -29,31 +40,70 @@ let addWorkItem workers graph item =
 
         ndx
 
-    match graph.ParentNodes.[item.Step] with
-    | [] ->
-        let ndx = nextAvailableNdx ()
+    let lastTime nodes =
+        let node =
+            List.maxBy (fun n -> state.Placed.[n]) nodes
 
-        workers.[ndx] <-
-            { Step = item.Step
-              Count = item.Count + workers.[ndx].Count }
-    | _ -> printfn "More complicated"
+        state.Placed.[node]
 
-let assignWorkItem graph = addWorkItem workers graph
+    let workerForTime time =
+        let mutable ndx = None
 
-let assignWork graph nodes =
-    if List.length nodes > 5 then
-        failwith $"Too many nodes ${List.length nodes}"
+        for n in 0 .. Array.length workers - 1 do
+            if workers.[n].Count <= time then
+                ndx <- Some n
 
-    List.sortDescending nodes
+        match ndx with
+        | None -> nextAvailableNdx ()
+        | Some n -> n
+
+    let updateWorker item time ndx =
+        let endTime =
+            item.Count
+            + System.Math.Max(state.Workers.[ndx].Count, time)
+
+        state.Workers.[ndx] <- { Step = item.Step; Count = endTime }
+        state.Placed.[item.Step] <- endTime
+
+    match state.Layout.ParentNodes.[item.Step] with
+    | [] -> updateWorker item 0 (nextAvailableNdx ())
+    | nodes ->
+        let time = lastTime nodes
+        let ndx = workerForTime time
+        updateWorker item time ndx
+
+let removeNodes state nodes =
+    List.iter
+        (fun node ->
+            let graph = state.Layout
+            graph.Parents.Remove node |> ignore
+
+            if graph.Tree.ContainsKey node then
+                List.iter (fun ch -> graph.Parents.[ch] <- graph.Parents.[ch] - 1) graph.Tree.[node])
+        nodes
+
+let assignWork state nodes =
+    if List.length nodes > numWorkers then
+        failwith $"Too many nodes {List.length nodes}"
+
+    List.sort nodes
     |> List.map (fun n -> { Step = n; Count = steps n })
-    |> List.iter (assignWorkItem graph)
+    |> List.iter (addWorkItem state)
 
-    Array.iter (fun item -> printfn $"{item.Step} {item.Count}") workers
+    removeNodes state nodes
+
+let doAllWork state =
+    while state.Layout.Parents.Count > 0 do
+        getNextNodes state.Layout |> assignWork state
+
+    state
+
+let getWorkers state = state.Workers
 
 let run exp fileName =
-    let graph = Parser.parseInput fileName
-    let nodes = getNextNodes graph
-
-    assignWork graph nodes
-
-// |> Aoc.Utils.Run.checkResult exp
+    Parser.parseInput fileName
+    |> newState
+    |> doAllWork
+    |> getWorkers
+    |> Array.fold (fun high worker -> System.Math.Max(worker.Count, high)) 0
+    |> Aoc.Utils.Run.checkResult exp
