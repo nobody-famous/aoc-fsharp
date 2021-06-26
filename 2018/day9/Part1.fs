@@ -39,14 +39,10 @@ let normalRound (state: GameState) =
     state.Board.[first] <-
         { state.Board.[first] with
               Right = state.NextMarble }
-    // { Left = state.Board.[first].Left
-    //   Right = state.NextMarble }
 
     state.Board.[second] <-
         { state.Board.[second] with
               Left = state.NextMarble }
-    // { Left = state.NextMarble
-    //   Right = state.Board.[second].Right }
 
     endRound state.NextMarble state
 
