@@ -7,8 +7,10 @@ let stepSize = 60
 let numWorkers = 5
 let steps ch = int ch - int 'A' + 1 + stepSize
 
+[<Struct>]
 type WorkItem = { Step: char; Count: int }
 
+[<Struct>]
 type State =
     { Workers: WorkItem array
       Layout: Graph

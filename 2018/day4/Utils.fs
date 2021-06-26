@@ -1,5 +1,6 @@
 module Aoc.Year2018.Day4.Utils
 
+[<Struct>]
 type DateEntry =
     { Year: int
       Month: int
@@ -12,4 +13,5 @@ type Entry =
     | Sleep of DateEntry
     | Wake of DateEntry
 
+[<Struct>]
 type GuardEntry = { Start: DateEntry; End: DateEntry }

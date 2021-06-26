@@ -1,5 +1,6 @@
 module Aoc.Year2018.Day8.Utils
 
+[<Struct>]
 type Node =
     { Kids: Node list
       Metadata: int list

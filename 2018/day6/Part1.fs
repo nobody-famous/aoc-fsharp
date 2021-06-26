@@ -3,8 +3,10 @@ module Aoc.Year2018.Day6.Part1
 open System.Collections.Generic
 open Aoc.Utils.Geometry
 
+[<Struct>]
 type GridBounds = { MinPt: Point; MaxPt: Point }
 
+[<Struct>]
 type Grid =
     { Bounds: GridBounds
       Cells: Point option [,] }
