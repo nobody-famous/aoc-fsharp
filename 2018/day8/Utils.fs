@@ -1,6 +1,21 @@
 module Aoc.Year2018.Day8.Utils
 
-type Node = { Kids: Node list; Metadata: int list }
+type Node =
+    { Kids: Node list
+      Metadata: int list
+      Value: int }
+
+let computeValue kids meta =
+    match List.length kids with
+    | 0 -> List.sum meta
+    | _ ->
+        List.fold
+            (fun total ndx ->
+                match ndx - 1 with
+                | n when n < List.length kids -> total + kids.[(List.length kids) - n - 1].Value
+                | _ -> total)
+            0
+            meta
 
 let parseTree input =
     let rec parseNode numbers =
@@ -19,7 +34,10 @@ let parseTree input =
                 meta <- (List.head rest) :: meta
                 rest <- List.tail rest
 
-            ({ Kids = kids; Metadata = meta }, rest)
+            ({ Kids = kids
+               Metadata = meta
+               Value = computeValue kids meta },
+             rest)
 
         | n -> failwith $"Invalid node {n}"
 
