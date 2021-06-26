@@ -1,9 +1,12 @@
 module Aoc.Year2018.Day9.Utils
 
+[<Struct>]
 type Game = { Players: int; LastMarble: int }
 
+[<Struct>]
 type Cell = { Left: int; Right: int }
 
+[<Struct>]
 type GameState =
     { Info: Game
       Player: int
