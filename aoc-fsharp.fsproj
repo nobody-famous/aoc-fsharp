@@ -47,6 +47,11 @@
     <Compile Include="2018/day8/Part1.fs" />
     <Compile Include="2018/day8/Part2.fs" />
 
+    <Compile Include="2018/day9/Utils.fs" />
+    <Compile Include="2018/day9/Parser.fs" />
+    <Compile Include="2018/day9/Part1.fs" />
+    <Compile Include="2018/day9/Part2.fs" />
+
     <Compile Include="2019/utils/Intcode.fs" />
     <Compile Include="2019/day1/Parser.fs" />
     <Compile Include="2019/day1/Utils.fs" />
