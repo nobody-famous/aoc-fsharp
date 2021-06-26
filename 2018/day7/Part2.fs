@@ -7,15 +7,17 @@ let stepSize = 60
 let numWorkers = 5
 let steps ch = int ch - int 'A' + 1 + stepSize
 
+[<Struct>]
 type WorkItem = { Step: char; Count: int }
 
+[<Struct>]
 type State =
     { Workers: WorkItem array
       Layout: Graph
       Placed: Dictionary<char, int> }
 
 let newState graph =
-    { Workers = Array.init numWorkers (fun _ -> { Step = '0'; Count = 0 })
+    { Workers = Array.create numWorkers { Step = '0'; Count = 0 }
       Layout = graph
       Placed = Dictionary<char, int>() }
 

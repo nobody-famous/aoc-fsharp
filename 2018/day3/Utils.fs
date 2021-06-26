@@ -2,8 +2,10 @@ module Aoc.Year2018.Day3.Utils
 
 open Aoc.Utils.Geometry
 
+[<Struct>]
 type Dimensions = { Width: int; Height: int }
 
+[<Struct>]
 type Rectangle =
     { Id: int
       Loc: Point
@@ -41,8 +43,7 @@ let findBounds rects =
 let createGrid rects =
     let (_, maxPt) = findBounds rects
 
-    let grid =
-        Array2D.init maxPt.X maxPt.Y (fun x y -> 0)
+    let grid = Array2D.create maxPt.X maxPt.Y 0
 
     Array.iter (fun (r: Rectangle) -> addToGrid grid r) rects
 

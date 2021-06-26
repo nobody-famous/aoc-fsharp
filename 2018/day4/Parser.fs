@@ -109,7 +109,7 @@ let buildTable (entries: Entry array) =
 
 let addMinutes (minutes: Dictionary<int, int array>) id (entry: GuardEntry) =
     if not (minutes.ContainsKey id) then
-        minutes.[id] <- Array.init 60 (fun n -> 0)
+        minutes.[id] <- Array.create 60 0
 
     for minute in entry.Start.Minute .. entry.End.Minute - 1 do
         minutes.[id].[minute] <- minutes.[id].[minute] + 1

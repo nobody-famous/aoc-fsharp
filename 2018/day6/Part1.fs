@@ -3,8 +3,10 @@ module Aoc.Year2018.Day6.Part1
 open System.Collections.Generic
 open Aoc.Utils.Geometry
 
+[<Struct>]
 type GridBounds = { MinPt: Point; MaxPt: Point }
 
+[<Struct>]
 type Grid =
     { Bounds: GridBounds
       Cells: Point option [,] }
@@ -29,7 +31,7 @@ let closest point points =
 
 let fillGrid points bounds =
     let grid =
-        Array2D.init (bounds.MaxPt.X + 1) (bounds.MaxPt.Y + 1) (fun _ _ -> None)
+        Array2D.create (bounds.MaxPt.X + 1) (bounds.MaxPt.Y + 1) None
 
     for y in bounds.MinPt.Y .. bounds.MaxPt.Y do
         for x in bounds.MinPt.X .. bounds.MaxPt.X do
