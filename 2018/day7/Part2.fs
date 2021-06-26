@@ -15,7 +15,7 @@ type State =
       Placed: Dictionary<char, int> }
 
 let newState graph =
-    { Workers = Array.init numWorkers (fun _ -> { Step = '0'; Count = 0 })
+    { Workers = Array.create numWorkers { Step = '0'; Count = 0 }
       Layout = graph
       Placed = Dictionary<char, int>() }
 

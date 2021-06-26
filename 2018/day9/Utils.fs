@@ -9,7 +9,7 @@ type GameState =
       Player: int
       CurMarble: int
       NextMarble: int
-      Scores: float array
+      Scores: int64 array
       Board: Cell array }
 
 let newGameState game =
@@ -21,7 +21,7 @@ let newGameState game =
                 | 0 -> { Left = 0; Right = 0 }
                 | _ -> { Left = -1; Right = -1 })
 
-    let scores = Array.init game.Players (fun _ -> 0.0)
+    let scores = Array.create game.Players 0L
 
     { Info = game
       Player = 0
@@ -53,8 +53,8 @@ let specialRound (state: GameState) =
 
     state.Scores.[state.Player] <-
         state.Scores.[state.Player]
-        + (float) toRemove
-        + (float) state.NextMarble
+        + (int64) toRemove
+        + (int64) state.NextMarble
 
     endRound right state
 

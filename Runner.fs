@@ -21,8 +21,8 @@ let problems2018 =
       { Data = (2018, 7, 2, Aoc.Year2018.Day7.Part2.run 967, "puzzle.txt") }
       { Data = (2018, 8, 1, Aoc.Year2018.Day8.Part1.run 40701, "puzzle.txt") }
       { Data = (2018, 8, 2, Aoc.Year2018.Day8.Part2.run 21399, "puzzle.txt") }
-      { Data = (2018, 9, 1, Aoc.Year2018.Day9.Part1.run 382055.0, "puzzle.txt") }
-      { Data = (2018, 9, 2, Aoc.Year2018.Day9.Part2.run 3133277384.0, "puzzle.txt") } ]
+      { Data = (2018, 9, 1, Aoc.Year2018.Day9.Part1.run 382055L, "puzzle.txt") }
+      { Data = (2018, 9, 2, Aoc.Year2018.Day9.Part2.run 3133277384L, "puzzle.txt") } ]
 
 // let problems2019 =
 //     [ { data = (2019, 1, 1, 3279287, aoc.year2019.day1.part1.run, "puzzle.txt") }
