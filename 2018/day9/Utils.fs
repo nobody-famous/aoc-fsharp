@@ -9,6 +9,7 @@ type GameState =
       Player: int
       CurMarble: int
       NextMarble: int
+      Scores: int array
       Board: Cell array }
 
 let newGameState game =
@@ -20,8 +21,11 @@ let newGameState game =
                 | 0 -> { Left = 0; Right = 0 }
                 | _ -> { Left = -1; Right = -1 })
 
+    let scores = Array.init game.Players (fun _ -> 0)
+
     { Info = game
-      Player = 1
+      Player = 0
       CurMarble = 0
       NextMarble = 1
+      Scores = scores
       Board = board }

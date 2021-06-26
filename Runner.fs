@@ -42,7 +42,7 @@ let runAll probs =
 [<EntryPoint>]
 let main argv =
     let problems2018 =
-        [ { Data = (2018, 9, 1, Aoc.Year2018.Day9.Part1.run 21399, "sample.txt") } ]
+        [ { Data = (2018, 9, 1, Aoc.Year2018.Day9.Part1.run 382055, "puzzle.txt") } ]
 
     runAll problems2018
 
