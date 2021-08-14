@@ -18,11 +18,28 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "run",
+            "label": "run 2018",
             "command": "dotnet",
             "type": "shell",
             "args": [
                 "run",
+                "-c",
+                "release",
+                "--project",
+                "aoc-2018.fsproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "run 2019",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "run",
+                "-c",
+                "release",
+                "--project",
+                "aoc-2019.fsproj"
             ],
             "problemMatcher": "$msCompile"
         }
