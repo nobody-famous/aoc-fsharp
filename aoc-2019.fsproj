@@ -10,10 +10,16 @@
     <Compile Include="Utils/Regex.fs" />
     <Compile Include="Utils/Run.fs" />
 
+    <Compile Include="2019a/Utils/Intcode.fs" />
+
     <Compile Include="2019a/day1/Parser.fs" />
     <Compile Include="2019a/day1/Utils.fs" />
     <Compile Include="2019a/day1/Part1.fs" />
     <Compile Include="2019a/day1/Part2.fs" />
+
+    <Compile Include="2019a/day2/Parser.fs" />
+    <Compile Include="2019a/day2/Part1.fs" />
+    <Compile Include="2019a/day2/Part2.fs" />
 
     <Compile Include="Runner2019.fs" />
   </ItemGroup>
