@@ -19,9 +19,9 @@ let runAll probs =
     printfn $"total {total} ms"
 
 [<EntryPoint>]
-let main argv =
-    // let problems2019 =
-    //     [ { Data = (2019, 3, 2, Aoc.Year2019.Day3.Part2.run 20386, "puzzle.txt") } ]
+let main _ =
+    let problems2019 =
+        [ { Data = (2019, 4, 1, Aoc.Year2019.Day4.Part1.run 511, "puzzle.txt") } ]
 
     runAll problems2019
 
