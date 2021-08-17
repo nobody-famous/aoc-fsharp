@@ -26,6 +26,11 @@
     <Compile Include="2019a/day3/Part1.fs" />
     <Compile Include="2019a/day3/Part2.fs" />
 
+    <Compile Include="2019a/day4/Parser.fs" />
+    <Compile Include="2019a/day4/Utils.fs" />
+    <Compile Include="2019a/day4/Part1.fs" />
+    <Compile Include="2019a/day4/Part2.fs" />
+
     <Compile Include="Runner2019.fs" />
   </ItemGroup>
 </Project>
