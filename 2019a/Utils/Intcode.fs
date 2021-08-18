@@ -25,7 +25,7 @@ type MachineState =
       mutable Debug: bool
       mutable Halted: bool }
 
-let MachineWithIo io prog =
+let initState io prog =
     { Ip = 0
       CurInstr = None
       Prog = Array.copy prog
@@ -33,7 +33,8 @@ let MachineWithIo io prog =
       Debug = false
       Halted = false }
 
-let Machine prog = MachineWithIo None prog
+let machineIo io prog = initState(Some io) prog
+let machine prog = initState None prog
 
 let parseMode num =
     match num with
@@ -112,6 +113,9 @@ let doOutput arg mach =
     | Some io -> io.Output value
     | None -> failwith $"IO not set"
 
+    if mach.Debug then
+        printfn $"{mach.Ip}: OUTPUT {value}"
+
     mach.Ip <- mach.Ip + 2
 
 let execInstr mach =
@@ -135,7 +139,7 @@ let rec execAll mach =
     if mach.Halted then
         mach
     else
-        exec mach |> execAll
+        mach |> exec |> execAll
 
 let setPosition pos value mach =
     mach.Prog.[pos] <- value

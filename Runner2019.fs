@@ -25,7 +25,7 @@ let runAll probs =
 [<EntryPoint>]
 let main _ =
     // let problems2019 =
-    //     [ { Data = (2019, 5, 1, Day5.Part1.run 13294380, "puzzle.txt") } ]
+    //     [ { Data = (2019, 5, 2, Day5.Part2.run 11460760, "puzzle.txt") } ]
 
     runAll problems2019
 

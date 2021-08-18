@@ -4,7 +4,7 @@ open Aoc.Year2019.Utils.Intcode
 
 let run exp fileName =
     parseInput fileName
-    |> Machine
+    |> machine
     |> setDebug false
     |> setPosition 1 12
     |> setPosition 2 2

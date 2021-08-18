@@ -1,9 +1,9 @@
-module Aoc.Year2019.Day5.Part1
+module Aoc.Year2019.Day5.Part2
 
 open Aoc.Year2019.Utils.Intcode
 
 let run exp fileName =
-    let io = new Utils.Io(1)
+    let io = new Utils.Io(5)
 
     parseInput fileName
     |> machineIo io.MachIo

@@ -3,7 +3,7 @@ module Aoc.Year2019.Day2.Part2
 open Aoc.Year2019.Utils.Intcode
 
 let runMachine prog noun verb =
-    Machine prog
+    machine prog
     |> setPosition 1 noun
     |> setPosition 2 verb
     |> execAll
