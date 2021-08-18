@@ -25,7 +25,7 @@ let findInputs target prog =
 let toAnswer (noun, verb) = (noun * 100) + verb
 
 let run exp fileName =
-    Parser.parseInput fileName
+    parseInput fileName
     |> findInputs 19690720
     |> toAnswer
     |> Aoc.Utils.Run.checkResult exp
