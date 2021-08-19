@@ -11,6 +11,10 @@ type Instruction =
     | Mul of Arg * Arg * int
     | Input of int
     | Output of Arg
+    | JmpTrue of Arg * Arg
+    | JmpFalse of Arg * Arg
+    | Less of Arg * Arg * int
+    | Eq of Arg * Arg * int
     | Hlt
 
 type MachineIo =
@@ -33,7 +37,7 @@ let initState io prog =
       Debug = false
       Halted = false }
 
-let machineIo io prog = initState(Some io) prog
+let machineIo io prog = initState (Some io) prog
 let machine prog = initState None prog
 
 let parseMode num =
@@ -46,19 +50,26 @@ let parseArg instr shift offset mach =
     { Mode = parseMode ((instr / shift) % 10)
       Value = mach.Prog.[mach.Ip + offset] }
 
+let debugPrint str mach =
+    printfn $"{mach.Ip} ({mach.Prog.[mach.Ip]}): {str}"
+
 let parseInstr mach =
     let instr = mach.Prog.[mach.Ip]
-    let op = instr % 100
 
-    mach.CurInstr <-
-        (match op with
-         | 1 -> Some(Add(parseArg instr 100 1 mach, parseArg instr 1000 2 mach, mach.Prog.[mach.Ip + 3]))
-         | 2 -> Some(Mul(parseArg instr 100 1 mach, parseArg instr 1000 2 mach, mach.Prog.[mach.Ip + 3]))
-         | 3 -> Some(Input(mach.Prog.[mach.Ip + 1]))
-         | 4 -> Some(Output(parseArg instr 100 1 mach))
-         | 99 -> Some(Hlt)
-         | i -> failwith $"Unhandled op {i}")
+    let op =
+        (match instr % 100 with
+         | 1 -> Add(parseArg instr 100 1 mach, parseArg instr 1000 2 mach, mach.Prog.[mach.Ip + 3])
+         | 2 -> Mul(parseArg instr 100 1 mach, parseArg instr 1000 2 mach, mach.Prog.[mach.Ip + 3])
+         | 3 -> Input(mach.Prog.[mach.Ip + 1])
+         | 4 -> Output(parseArg instr 100 1 mach)
+         | 5 -> JmpTrue(parseArg instr 100 1 mach, parseArg instr 1000 2 mach)
+         | 6 -> JmpFalse(parseArg instr 100 1 mach, parseArg instr 1000 2 mach)
+         | 7 -> Less(parseArg instr 100 1 mach, parseArg instr 1000 2 mach, mach.Prog.[mach.Ip + 3])
+         | 8 -> Eq(parseArg instr 100 1 mach, parseArg instr 1000 2 mach, mach.Prog.[mach.Ip + 3])
+         | 99 -> Hlt
+         | i -> failwith $"Unhandled op: IP {mach.Ip}, {instr} ({i})")
 
+    mach.CurInstr <- Some op
     mach
 
 let argValue arg mach =
@@ -73,7 +84,7 @@ let doAdd arg1 arg2 addr mach =
     mach.Prog.[addr] <- value1 + value2
 
     if mach.Debug then
-        printfn $"{mach.Ip}: [{addr}] = {mach.Prog.[addr]} ({value1} + {value2})"
+        debugPrint $"[{addr}] = {mach.Prog.[addr]} ({value1} + {value2})" mach
 
     mach.Ip <- mach.Ip + 4
 
@@ -84,7 +95,7 @@ let doMul arg1 arg2 addr mach =
     mach.Prog.[addr] <- value1 * value2
 
     if mach.Debug then
-        printfn $"{mach.Ip}: [{addr}] = {mach.Prog.[addr]} ({value1} * {value2})"
+        debugPrint $"[{addr}] = {mach.Prog.[addr]} ({value1} * {value2})" mach
 
     mach.Ip <- mach.Ip + 4
 
@@ -92,7 +103,7 @@ let doHalt mach =
     mach.Halted <- true
 
     if mach.Debug then
-        printfn $"{mach.Ip}: HLT"
+        debugPrint $"HLT" mach
 
     mach.Ip <- mach.Ip + 1
 
@@ -102,7 +113,7 @@ let doInput addr mach =
     | None -> failwith $"IO not set"
 
     if mach.Debug then
-        printfn $"{mach.Ip}: [{addr}] = {mach.Prog.[addr]}"
+        debugPrint $"[{addr}] = {mach.Prog.[addr]}" mach
 
     mach.Ip <- mach.Ip + 2
 
@@ -114,9 +125,55 @@ let doOutput arg mach =
     | None -> failwith $"IO not set"
 
     if mach.Debug then
-        printfn $"{mach.Ip}: OUTPUT {value}"
+        debugPrint $"OUTPUT {value}" mach
 
     mach.Ip <- mach.Ip + 2
+
+let doJmpTrue arg1 arg2 mach =
+    let value1 = argValue arg1 mach
+    let value2 = argValue arg2 mach
+
+    if mach.Debug then
+        debugPrint $"JmpTrue {value1} {value2}" mach
+
+    if value1 <> 0 then
+        mach.Ip <- value2
+    else
+        mach.Ip <- mach.Ip + 3
+
+let doJmpFalse arg1 arg2 mach =
+    let value1 = argValue arg1 mach
+    let value2 = argValue arg2 mach
+
+    if mach.Debug then
+        debugPrint $"JmpFalse {value1} {value2}" mach
+
+    if value1 = 0 then
+        mach.Ip <- value2
+    else
+        mach.Ip <- mach.Ip + 3
+
+let doLess arg1 arg2 arg3 mach =
+    let value1 = argValue arg1 mach
+    let value2 = argValue arg2 mach
+
+    mach.Prog.[arg3] <- if value1 < value2 then 1 else 0
+
+    if mach.Debug then
+        debugPrint $"[{arg3}] <- {mach.Prog.[arg3]} ({value1} < {value2})" mach
+
+    mach.Ip <- mach.Ip + 4
+
+let doEq arg1 arg2 arg3 mach =
+    let value1 = argValue arg1 mach
+    let value2 = argValue arg2 mach
+
+    mach.Prog.[arg3] <- if value1 = value2 then 1 else 0
+
+    if mach.Debug then
+        debugPrint $"[{arg3}] <- {mach.Prog.[arg3]} ({value1} = {value2})" mach
+
+    mach.Ip <- mach.Ip + 4
 
 let execInstr mach =
     match mach.CurInstr with
@@ -125,6 +182,10 @@ let execInstr mach =
     | Some (Input (addr)) -> doInput addr mach
     | Some (Output (arg)) -> doOutput arg mach
     | Some (Hlt) -> doHalt mach
+    | Some (JmpTrue (arg1, arg2)) -> doJmpTrue arg1 arg2 mach
+    | Some (JmpFalse (arg1, arg2)) -> doJmpFalse arg1 arg2 mach
+    | Some (Less (arg1, arg2, arg3)) -> doLess arg1 arg2 arg3 mach
+    | Some (Eq (arg1, arg2, arg3)) -> doEq arg1 arg2 arg3 mach
     | None -> failwith "No current instruction"
 
     mach
