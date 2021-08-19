@@ -3,7 +3,7 @@ module Aoc.Year2019.Day2.Part2
 open Aoc.Year2019.Utils.Intcode
 
 let runMachine prog noun verb =
-    Machine prog
+    machine prog
     |> setPosition 1 noun
     |> setPosition 2 verb
     |> execAll
@@ -25,7 +25,7 @@ let findInputs target prog =
 let toAnswer (noun, verb) = (noun * 100) + verb
 
 let run exp fileName =
-    Parser.parseInput fileName
+    parseInput fileName
     |> findInputs 19690720
     |> toAnswer
     |> Aoc.Utils.Run.checkResult exp
