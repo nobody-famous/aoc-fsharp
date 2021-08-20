@@ -11,13 +11,13 @@ let parseLine (line: string) =
       Child = parts.[1] }
 
 let buildGraph orbits =
-    let graph = Dictionary<string, Utils.Node list>()
+    let graph = Dictionary<string, string list>()
 
     for { Parent = parent; Child = child } in orbits do
         if not (graph.ContainsKey parent) then
             graph.[parent] <- []
 
-        graph.[parent] <- new Utils.Node(child) :: graph.[parent]
+        graph.[parent] <- child :: graph.[parent]
 
     graph
 
