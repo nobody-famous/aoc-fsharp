@@ -15,7 +15,9 @@ let problems2019 =
       { Data = (2019, 4, 1, Day4.Part1.run 511, "puzzle.txt") }
       { Data = (2019, 4, 2, Day4.Part2.run 316, "puzzle.txt") }
       { Data = (2019, 5, 1, Day5.Part1.run 13294380, "puzzle.txt") }
-      { Data = (2019, 5, 2, Day5.Part2.run 11460760, "puzzle.txt") } ]
+      { Data = (2019, 5, 2, Day5.Part2.run 11460760, "puzzle.txt") }
+      { Data = (2019, 6, 1, Day6.Part1.run 162816, "puzzle.txt") }
+      { Data = (2019, 6, 2, Day6.Part2.run 304, "puzzle.txt") } ]
 
 let runAll probs =
     let total =
@@ -26,7 +28,7 @@ let runAll probs =
 [<EntryPoint>]
 let main _ =
     // let problems2019 =
-    //     [ { Data = (2019, 5, 2, Day5.Part2.run 11460760, "puzzle.txt") } ]
+    //     [ { Data = (2019, 6, 2, Day6.Part2.run 304, "puzzle.txt") } ]
 
     runAll problems2019
 
