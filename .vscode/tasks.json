@@ -4,6 +4,34 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Watch Runner",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "watch",
+                "--project",
+                "src/Runner/Runner.fsproj",
+                "run",
+                "-c",
+                "release",
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Watch Tests",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "watch",
+                "--project",
+                "test/2018/Day1/Tests.fsproj",
+                "test",
+                "-c",
+                "release",
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "build",
             "command": "dotnet",
             "type": "shell",
