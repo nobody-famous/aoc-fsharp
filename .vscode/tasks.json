@@ -18,6 +18,19 @@
             "problemMatcher": []
         },
         {
+            "label": "Run Runner",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "src/Runner/Runner.fsproj",
+                "-c",
+                "release",
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "Watch Tests",
             "type": "shell",
             "command": "dotnet",
