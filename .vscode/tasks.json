@@ -24,7 +24,7 @@
             "args": [
                 "watch",
                 "--project",
-                "test/2018/Day1/Tests.fsproj",
+                "test/2018/Day9/Day9Test.fsproj",
                 "test",
                 "-c",
                 "release",
