@@ -1,4 +1,4 @@
-module y2018.day9.utils
+module Aoc.Year2018.Day9.Utils
 
 [<Struct>]
 type Config = { NumPlayers: int; LastMarble: int }

@@ -1,9 +1,9 @@
-﻿module y2018.day9.part2
+﻿module Aoc.Year2018.Day9.Part2
 
 let updateLastMarble config =
-    { config with utils.LastMarble = config.LastMarble * 100 }
+    { config with Utils.LastMarble = config.LastMarble * 100 }
 
 let run (input: string) =
-    utils.parse input
+    Utils.parse input
     |> updateLastMarble
-    |> utils.playGame
+    |> Utils.playGame

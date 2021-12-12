@@ -76,10 +76,10 @@ let runProblem (prob: Problem) =
     watch.ElapsedMilliseconds |> int
 
 let year2018: Problem list =
-    [ IntProblem("2018/day1/part1", y2018.day1.part1.run, 437)
-      IntProblem("2018/day1/part2", y2018.day1.part2.run, 655)
-      LongProblem("2018/day9/part1", y2018.day9.part1.run, 382055)
-      LongProblem("2018/day9/part2", y2018.day9.part2.run, 3133277384L) ]
+    [ IntProblem("2018/day1/part1", Aoc.Year2018.Day1.Part1.run, 437)
+      IntProblem("2018/day1/part2", Aoc.Year2018.Day1.Part2.run, 655)
+      LongProblem("2018/day9/part1", Aoc.Year2018.Day9.Part1.run, 382055)
+      LongProblem("2018/day9/part2", Aoc.Year2018.Day9.Part2.run, 3133277384L) ]
 
 [<EntryPoint>]
 let main _ =
