@@ -4,11 +4,16 @@ open System.Collections.Generic
 
 type Point = { X: int; Y: int }
 
+type Direction =
+    | North
+    | South
+    | East
+    | West
+
 type Piece =
     | HorizLine
     | VertLine
-    | CurveRight
-    | CurveLeft
+    | Turn of Direction * Direction
     | Intersect
     | Up
     | Down
@@ -23,7 +28,7 @@ type Turn =
 [<Struct>]
 type Cart =
     { Loc: Point
-      Dir: Piece
+      Dir: Direction
       NextTurn: Turn }
 
 [<Struct>]
@@ -48,30 +53,33 @@ let findBounds (pts: Point list) : Point * Point =
            Y = System.Int32.MinValue })
         pts
 
-
-
-let trimIndent (input: string list) : string list =
+let trimIndent (input: string array) : string array =
     let strIndent (str: string) =
         str.ToCharArray()
         |> Array.takeWhile (fun ch -> System.Char.IsWhiteSpace ch)
 
-    let rec removeBlanks (lines: string list) =
-        match lines with
-        | [] -> []
-        | line :: rest ->
-            if line.Trim().Length = 0 then
-                removeBlanks rest
-            else
-                line :: rest
+    let stripIndent (input: string array) : string array =
+        let indent =
+            Array.fold (fun acc str -> min acc (strIndent str).Length) System.Int32.MaxValue input
 
-    let indent =
-        input
-        |> removeBlanks
-        |> List.fold (fun acc str -> min acc (strIndent str).Length) System.Int32.MaxValue
+        Array.map (fun (str: string) -> str.Substring indent) input
 
-    input
-    |> List.filter (fun str -> str.Length > 0)
-    |> List.map (fun str -> str.Substring indent)
+    let findEnds (input: string array) : int * int =
+        let mutable startNdx = 0
+        let mutable endNdx = input.Length - 1
+
+        while input.[startNdx].Length = 0 do
+            startNdx <- startNdx + 1
+
+        while input.[endNdx].Trim().Length = 0 do
+            endNdx <- endNdx - 1
+
+        (startNdx, endNdx)
+
+    let cutEnds (input: string array) startNdx endNdx : string array =
+        Array.sub input startNdx (endNdx - startNdx + 1)
+
+    input |> findEnds ||> cutEnds input |> stripIndent
 
 let isTrack ch =
     match ch with
@@ -92,10 +100,10 @@ let isCart ch =
 
 let charToDir ch =
     match ch with
-    | '^' -> Piece.Up
-    | 'v' -> Piece.Down
-    | '>' -> Piece.Right
-    | '<' -> Piece.Left
+    | '^' -> North
+    | 'v' -> South
+    | '>' -> East
+    | '<' -> West
     | _ -> failwith $"Invalid direction -{ch}-"
 
 let charToTrack ch =
@@ -106,8 +114,8 @@ let charToTrack ch =
     | '<'
     | '>'
     | '-' -> Piece.HorizLine
-    | '/' -> Piece.CurveRight
-    | '\\' -> Piece.CurveLeft
+    | '/' -> Piece.Turn(North, North)
+    | '\\' -> Piece.Turn(North, North)
     | '+' -> Piece.Intersect
     | _ -> failwith $"Invalid char -{ch}-"
 
@@ -126,7 +134,7 @@ let buildGrid (lines: string list) =
                     let cart =
                         { Loc = loc
                           Dir = charToDir ch
-                          NextTurn = Turn.Left }
+                          NextTurn = Left }
 
                     state.Carts <- cart :: state.Carts
                     state.Grid.Add(loc, charToTrack next.[x])
@@ -139,8 +147,8 @@ let buildGrid (lines: string list) =
 
 let parse (input: string) =
     input.Split '\n'
-    |> Array.toList
     |> trimIndent
+    |> Array.toList
     |> buildGrid
 
 let run (input: string) =
