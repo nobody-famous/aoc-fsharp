@@ -79,12 +79,13 @@ let year2018: Problem list =
     [ IntProblem("2018/day1/part1", Aoc.Year2018.Day1.Part1.run, 437)
       IntProblem("2018/day1/part2", Aoc.Year2018.Day1.Part2.run, 655)
       LongProblem("2018/day9/part1", Aoc.Year2018.Day9.Part1.run, 382055)
-      LongProblem("2018/day9/part2", Aoc.Year2018.Day9.Part2.run, 3133277384L) ]
+      LongProblem("2018/day9/part2", Aoc.Year2018.Day9.Part2.run, 3133277384L)
+      StringProblem("2018/day13/part1",Aoc.Year2018.Day13.Part1.run, "80,100") ]
 
 [<EntryPoint>]
 let main _ =
     // let allProblems: Problem list = year2018
-    let allProblems: Problem list = [StringProblem("2018/day13/part1",Aoc.Year2018.Day13.Part1.run, "")]
+    let allProblems: Problem list = [StringProblem("2018/day13/part2",Aoc.Year2018.Day13.Part2.run, "80,100")]
 
     let total =
         List.fold (fun total p -> total + runProblem p) 0 allProblems

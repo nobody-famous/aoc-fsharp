@@ -161,10 +161,14 @@ let printGrid state =
         printfn ""
 
 let isHorizLine state pt =
-    state.Grid.ContainsKey pt && (state.Grid.[pt] = HorizLine || state.Grid.[pt]=Intersect)
+    state.Grid.ContainsKey pt
+    && (state.Grid.[pt] = HorizLine
+        || state.Grid.[pt] = Intersect)
 
 let isVertLine state pt =
-    state.Grid.ContainsKey pt && (state.Grid.[pt] = VertLine || state.Grid.[pt] = Intersect)
+    state.Grid.ContainsKey pt
+    && (state.Grid.[pt] = VertLine
+        || state.Grid.[pt] = Intersect)
 
 let buildState (lines: string list) =
     let mutable state = newState ()
@@ -216,3 +220,95 @@ let buildState (lines: string list) =
 
     parseLines lines 0
     state
+
+
+let parse (input: string) =
+    input.Split '\n'
+    |> trimIndent
+    |> Array.toList
+    |> buildState
+
+let move (state: State) (cart: Cart) =
+    let mutable newLoc = cart.Loc
+    let mutable newDir = cart.Dir
+    let mutable newTurn = cart.NextTurn
+
+    newLoc <-
+        match cart.Dir with
+        | North -> { cart.Loc with Point.Y = cart.Loc.Y - 1 }
+        | South -> { cart.Loc with Point.Y = cart.Loc.Y + 1 }
+        | East -> { cart.Loc with Point.X = cart.Loc.X + 1 }
+        | West -> { cart.Loc with Point.X = cart.Loc.X - 1 }
+
+    newDir <-
+        match state.Grid.[newLoc] with
+        | HorizLine
+        | VertLine -> cart.Dir
+        | Turn (East, North) ->
+            match cart.Dir with
+            | South -> East
+            | West -> North
+            | _ -> failwith $"Invalid dir {cart}"
+        | Turn (West, North) ->
+            match cart.Dir with
+            | South -> West
+            | East -> North
+            | _ -> failwith $"Invalid dir {cart}"
+        | Turn (East, South) ->
+            match cart.Dir with
+            | North -> East
+            | West -> South
+            | _ -> failwith $"Invalid dir {cart}"
+        | Turn (West, South) ->
+            match cart.Dir with
+            | North -> West
+            | East -> South
+            | _ -> failwith $"Invalid dir {cart}"
+        | Intersect ->
+            match cart.NextTurn with
+            | Left ->
+                (newTurn <- Straight
+
+                 match cart.Dir with
+                 | North -> West
+                 | South -> East
+                 | East -> North
+                 | West -> South)
+            | Right ->
+                (newTurn <- Left
+
+                 match cart.Dir with
+                 | North -> East
+                 | South -> West
+                 | East -> South
+                 | West -> North)
+            | Straight ->
+                (newTurn <- Right
+                 cart.Dir)
+        | _ -> failwith $"Unhandled grid location {newLoc}"
+
+    { cart with
+        Loc = newLoc
+        Dir = newDir
+        NextTurn = newTurn }
+
+let tick (state: State) =
+    let mutable crash: option<Point> = None
+
+    let carts =
+        state.Carts.Values
+        |> Seq.toList
+        |> List.sortBy (fun cart -> cart.Loc.Y * 1000000 + cart.Loc.X)
+
+    state.Carts.Clear()
+
+    for cart in carts do
+        let newCart = move state cart
+
+        if state.Carts.ContainsKey newCart.Loc then
+            (crash <- Some(newCart.Loc)
+             state.Carts.Remove(newCart.Loc) |> ignore)
+        else
+            state.Carts.Add(newCart.Loc, newCart)
+
+    { state with Crash = crash }
