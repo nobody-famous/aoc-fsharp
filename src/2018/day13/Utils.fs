@@ -29,7 +29,8 @@ type Turn =
 type Cart =
     { Loc: Point
       Dir: Direction
-      NextTurn: Turn }
+      NextTurn: Turn
+      IsCrashed: bool }
 
 [<Struct>]
 type State =
@@ -208,7 +209,8 @@ let buildState (lines: string list) =
                     let cart =
                         { Loc = loc
                           Dir = charToDir ch
-                          NextTurn = Left }
+                          NextTurn = Left
+                          IsCrashed = false }
 
                     state.Carts.Add(loc, cart)
                     state.Grid.Add(loc, charToTrack next.[x])
@@ -300,15 +302,41 @@ let tick (state: State) =
         |> Seq.toList
         |> List.sortBy (fun cart -> cart.Loc.Y * 1000000 + cart.Loc.X)
 
-    state.Carts.Clear()
+    let newCarts = Dictionary<Point, Cart>()
 
     for cart in carts do
-        let newCart = move state cart
+        if
+            not (newCarts.ContainsKey cart.Loc)
+            || newCarts.[cart.Loc].IsCrashed = false
+        then
+            let newCart = move state cart
 
-        if state.Carts.ContainsKey newCart.Loc then
-            (crash <- Some(newCart.Loc)
-             state.Carts.Remove(newCart.Loc) |> ignore)
-        else
-            state.Carts.Add(newCart.Loc, newCart)
+            if state.Carts.ContainsKey newCart.Loc
+               || newCarts.ContainsKey newCart.Loc then
+                (crash <- Some(newCart.Loc)
+                 printfn $"CRASH {newCart.Loc.X},{newCart.Loc.Y} {cart.Loc.X},{cart.Loc.Y}"
+                 newCarts.[newCart.Loc] <- { newCart with IsCrashed = true }
+                 newCarts.[cart.Loc] <- { cart with IsCrashed = true })
+            else
+                newCarts.[newCart.Loc] <- newCart
 
-    { state with Crash = crash }
+    let finalCarts = Dictionary<Point, Cart>()
+
+    for entry in newCarts do
+        if not entry.Value.IsCrashed then
+            finalCarts.[entry.Key] <- entry.Value
+
+    if finalCarts.Count % 2 = 0 then
+        printfn "BEFORE"
+        for cart in state.Carts.Values do
+            printfn $"{cart.Loc.X},{cart.Loc.Y}"
+
+        printfn ""
+        printfn "AFTER"
+        for cart in finalCarts.Values do
+            printfn $"{cart.Loc.X},{cart.Loc.Y}"
+        failwith $"Even number of carts {finalCarts.Count}"
+
+    { state with
+        Crash = crash
+        Carts = finalCarts }
