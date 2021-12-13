@@ -34,11 +34,13 @@ type Cart =
 [<Struct>]
 type State =
     { Grid: Dictionary<Point, Piece>
-      Carts: Dictionary<Point, Cart> }
+      Carts: Dictionary<Point, Cart>
+      Crash: option<Point> }
 
 let newState () =
     { Grid = Dictionary<Point, Piece>()
-      Carts = Dictionary<Point, Cart>() }
+      Carts = Dictionary<Point, Cart>()
+      Crash = None }
 
 let isTrack ch =
     match ch with
@@ -95,7 +97,7 @@ let trimIndent (input: string array) : string array =
         let mutable startNdx = 0
         let mutable endNdx = input.Length - 1
 
-        while input.[startNdx].Length = 0 do
+        while input.[startNdx].Trim().Length = 0 do
             startNdx <- startNdx + 1
 
         while input.[endNdx].Trim().Length = 0 do
@@ -147,7 +149,9 @@ let printGrid state =
         for x in minPt.X .. maxPt.X do
             let key = { X = x; Y = y }
 
-            if state.Carts.ContainsKey key then
+            if state.Crash.IsSome && state.Crash.Value = key then
+                printf "X"
+            elif state.Carts.ContainsKey key then
                 printf $"{cartToPiece state.Carts.[key]}"
             elif state.Grid.ContainsKey key then
                 printf $"{pieceToChar state.Grid.[key]}"
@@ -155,3 +159,60 @@ let printGrid state =
                 printf " "
 
         printfn ""
+
+let isHorizLine state pt =
+    state.Grid.ContainsKey pt && (state.Grid.[pt] = HorizLine || state.Grid.[pt]=Intersect)
+
+let isVertLine state pt =
+    state.Grid.ContainsKey pt && (state.Grid.[pt] = VertLine || state.Grid.[pt] = Intersect)
+
+let buildState (lines: string list) =
+    let mutable state = newState ()
+
+    let updateTurns (turns: Point list) =
+        for turn in turns do
+            let horiz =
+                if isHorizLine state { turn with X = turn.X + 1 } then
+                    East
+                elif isHorizLine state { turn with X = turn.X - 1 } then
+                    West
+                else
+                    failwith $"No horizontal part for turn {turn}"
+
+            let vert =
+                if isVertLine state { turn with Y = turn.Y - 1 } then
+                    North
+                elif isVertLine state { turn with Y = turn.Y + 1 } then
+                    South
+                else
+                    failwith $"No vertical part for turn {turn}"
+
+            state.Grid.Add(turn, Turn(horiz, vert))
+
+    let rec parseLines lines y =
+        let mutable turns: Point list = []
+
+        match lines with
+        | [] -> ()
+        | (next: string) :: rest ->
+            for x in 0 .. next.Length - 1 do
+                let loc = { X = x; Y = y }
+
+                match next.[x] with
+                | ch when isTurn ch -> turns <- loc :: turns
+                | ch when isCart ch ->
+                    let cart =
+                        { Loc = loc
+                          Dir = charToDir ch
+                          NextTurn = Left }
+
+                    state.Carts.Add(loc, cart)
+                    state.Grid.Add(loc, charToTrack next.[x])
+                | ch when isTrack ch -> state.Grid.Add({ X = x; Y = y }, charToTrack next.[x])
+                | _ -> ()
+
+            parseLines rest (y + 1)
+            updateTurns turns
+
+    parseLines lines 0
+    state
