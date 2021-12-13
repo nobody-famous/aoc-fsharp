@@ -2,6 +2,7 @@ module Aoc.Year2018.Day13.Utils
 
 open System.Collections.Generic
 
+[<Struct>]
 type Point = { X: int; Y: int }
 
 type Direction =
@@ -297,46 +298,37 @@ let move (state: State) (cart: Cart) =
 let tick (state: State) =
     let mutable crash: option<Point> = None
 
-    let carts =
+    let rec loop locs =
+        match locs with
+        | [] -> ()
+        | loc :: rest ->
+            let cart = state.Carts.[loc]
+
+            if cart.IsCrashed then
+                state.Carts.Remove loc |> ignore
+                loop rest
+            else
+                let newCart = move state cart
+
+                if state.Carts.ContainsKey newCart.Loc then
+                    crash <- Some(newCart.Loc)
+                    state.Carts.[newCart.Loc] <- { newCart with IsCrashed = true }
+                else
+                    state.Carts.[newCart.Loc] <- newCart
+
+                state.Carts.Remove cart.Loc |> ignore
+                loop rest
+
+    let sortedCarts =
         state.Carts.Values
         |> Seq.toList
-        |> List.sortBy (fun cart -> cart.Loc.Y * 1000000 + cart.Loc.X)
+        |> List.sortBy (fun cart -> cart.Loc.Y * 1000 + cart.Loc.X)
+        |> List.map (fun cart -> cart.Loc)
 
-    let newCarts = Dictionary<Point, Cart>()
+    loop sortedCarts
 
-    for cart in carts do
-        if
-            not (newCarts.ContainsKey cart.Loc)
-            || newCarts.[cart.Loc].IsCrashed = false
-        then
-            let newCart = move state cart
+    for loc in state.Carts.Keys do
+        if state.Carts.[loc].IsCrashed then
+            state.Carts.Remove loc |> ignore
 
-            if state.Carts.ContainsKey newCart.Loc
-               || newCarts.ContainsKey newCart.Loc then
-                (crash <- Some(newCart.Loc)
-                 printfn $"CRASH {newCart.Loc.X},{newCart.Loc.Y} {cart.Loc.X},{cart.Loc.Y}"
-                 newCarts.[newCart.Loc] <- { newCart with IsCrashed = true }
-                 newCarts.[cart.Loc] <- { cart with IsCrashed = true })
-            else
-                newCarts.[newCart.Loc] <- newCart
-
-    let finalCarts = Dictionary<Point, Cart>()
-
-    for entry in newCarts do
-        if not entry.Value.IsCrashed then
-            finalCarts.[entry.Key] <- entry.Value
-
-    if finalCarts.Count % 2 = 0 then
-        printfn "BEFORE"
-        for cart in state.Carts.Values do
-            printfn $"{cart.Loc.X},{cart.Loc.Y}"
-
-        printfn ""
-        printfn "AFTER"
-        for cart in finalCarts.Values do
-            printfn $"{cart.Loc.X},{cart.Loc.Y}"
-        failwith $"Even number of carts {finalCarts.Count}"
-
-    { state with
-        Crash = crash
-        Carts = finalCarts }
+    { state with Crash = crash }

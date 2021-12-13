@@ -25,8 +25,8 @@ let sample2 =
 
 let sample3 =
     """
-    /->>\
-    |   |  /----\
+    /<--\
+    ^   |  /----\
     | /-+--+-\  |
     | | |  | v  |
     \-+-/  \-+--/
@@ -40,8 +40,7 @@ let Part1 () =
 
 [<Test>]
 let Part2 () =
-    // Assert.AreEqual("6,4",Aoc.Year2018.Day13.Part2.run sample2)
-    Assert.AreEqual("6,4",Aoc.Year2018.Day13.Part2.run sample3)
+    Assert.AreEqual("6,4",Aoc.Year2018.Day13.Part2.run sample2)
     Assert.Pass()
 
 [<EntryPoint>]

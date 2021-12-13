@@ -8,9 +8,8 @@ let run (input: string) =
     while state.Carts.Count > 1 do
         state <- Utils.tick state
 
-    // Utils.printGrid state
-    printfn $"CARTS {state.Carts.Count}"
     let mutable answer = ""
+
     for cart in state.Carts.Values do
         answer <- $"{cart.Loc.X},{cart.Loc.Y}"
 
