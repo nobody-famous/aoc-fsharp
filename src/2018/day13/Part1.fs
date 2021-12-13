@@ -1,160 +1,66 @@
-﻿module y2018.day13.part1
+﻿module Aoc.Year2018.Day13.Part1
 
-open System.Collections.Generic
+module Utils = Aoc.Year2018.Day13.Utils
 
-type Point = { X: int; Y: int }
 
-type Direction =
-    | North
-    | South
-    | East
-    | West
+let buildState (lines: string list) =
+    let mutable state = Utils.newState ()
 
-type Piece =
-    | HorizLine
-    | VertLine
-    | Turn of Direction * Direction
-    | Intersect
-    | Up
-    | Down
-    | Right
-    | Left
+    let updateTurns (turns: Utils.Point list) =
+        for turn in turns do
+            let horiz =
+                if state.Grid.ContainsKey { turn with X = turn.X + 1 } then
+                    Utils.East
+                elif state.Grid.ContainsKey { turn with X = turn.X - 1 } then
+                    Utils.West
+                else
+                    failwith $"No horizontal part for turn {turn}"
 
-type Turn =
-    | Left
-    | Right
-    | Straight
+            let vert =
+                if state.Grid.ContainsKey { turn with Y = turn.Y - 1 } then
+                    Utils.North
+                elif state.Grid.ContainsKey { turn with Y = turn.Y + 1 } then
+                    Utils.South
+                else
+                    failwith $"No vertical part for turn {turn}"
 
-[<Struct>]
-type Cart =
-    { Loc: Point
-      Dir: Direction
-      NextTurn: Turn }
-
-[<Struct>]
-type State =
-    { Grid: Dictionary<Point, Piece>
-      mutable Carts: Cart list }
-
-let newState () =
-    { Grid = Dictionary<Point, Piece>()
-      Carts = [] }
-
-let findBounds (pts: Point list) : Point * Point =
-    List.fold
-        (fun (minPt, maxPt) pt ->
-            ({ X = min pt.X minPt.X
-               Y = min pt.Y minPt.Y },
-             { X = max pt.X maxPt.X
-               Y = max pt.Y maxPt.Y }))
-        ({ X = System.Int32.MaxValue
-           Y = System.Int32.MaxValue },
-         { X = System.Int32.MinValue
-           Y = System.Int32.MinValue })
-        pts
-
-let trimIndent (input: string array) : string array =
-    let strIndent (str: string) =
-        str.ToCharArray()
-        |> Array.takeWhile (fun ch -> System.Char.IsWhiteSpace ch)
-
-    let stripIndent (input: string array) : string array =
-        let indent =
-            Array.fold (fun acc str -> min acc (strIndent str).Length) System.Int32.MaxValue input
-
-        Array.map (fun (str: string) -> str.Substring indent) input
-
-    let findEnds (input: string array) : int * int =
-        let mutable startNdx = 0
-        let mutable endNdx = input.Length - 1
-
-        while input.[startNdx].Length = 0 do
-            startNdx <- startNdx + 1
-
-        while input.[endNdx].Trim().Length = 0 do
-            endNdx <- endNdx - 1
-
-        (startNdx, endNdx)
-
-    let cutEnds (input: string array) startNdx endNdx : string array =
-        Array.sub input startNdx (endNdx - startNdx + 1)
-
-    input |> findEnds ||> cutEnds input |> stripIndent
-
-let isTrack ch =
-    match ch with
-    | '|'
-    | '-'
-    | '/'
-    | '+'
-    | '\\' -> true
-    | _ -> false
-
-let isCart ch =
-    match ch with
-    | '^'
-    | 'v'
-    | '<'
-    | '>' -> true
-    | _ -> false
-
-let charToDir ch =
-    match ch with
-    | '^' -> North
-    | 'v' -> South
-    | '>' -> East
-    | '<' -> West
-    | _ -> failwith $"Invalid direction -{ch}-"
-
-let charToTrack ch =
-    match ch with
-    | '^'
-    | 'v'
-    | '|' -> Piece.VertLine
-    | '<'
-    | '>'
-    | '-' -> Piece.HorizLine
-    | '/' -> Piece.Turn(North, North)
-    | '\\' -> Piece.Turn(North, North)
-    | '+' -> Piece.Intersect
-    | _ -> failwith $"Invalid char -{ch}-"
-
-let buildGrid (lines: string list) =
-    let mutable state = newState ()
+            state.Grid.Add(turn, Utils.Turn(horiz, vert))
 
     let rec parseLines lines y =
+        let mutable turns: Utils.Point list = []
+
         match lines with
-        | [] -> state
+        | [] -> ()
         | (next: string) :: rest ->
             for x in 0 .. next.Length - 1 do
+                let loc = { Utils.X = x; Utils.Y = y }
+
                 match next.[x] with
-                | ch when isCart ch ->
-                    let loc = { X = x; Y = y }
-
+                | ch when Utils.isTurn ch -> turns <- loc :: turns
+                | ch when Utils.isCart ch ->
                     let cart =
-                        { Loc = loc
-                          Dir = charToDir ch
-                          NextTurn = Left }
+                        { Utils.Loc = loc
+                          Utils.Dir = Utils.charToDir ch
+                          Utils.NextTurn = Utils.Left }
 
-                    state.Carts <- cart :: state.Carts
-                    state.Grid.Add(loc, charToTrack next.[x])
-                | ch when isTrack ch -> state.Grid.Add({ X = x; Y = y }, charToTrack next.[x])
+                    state.Carts.Add(loc, cart)
+                    state.Grid.Add(loc, Utils.charToTrack next.[x])
+                | ch when Utils.isTrack ch -> state.Grid.Add({ X = x; Y = y }, Utils.charToTrack next.[x])
                 | _ -> ()
 
             parseLines rest (y + 1)
+            updateTurns turns
 
     parseLines lines 0
+    state
 
 let parse (input: string) =
     input.Split '\n'
-    |> trimIndent
+    |> Utils.trimIndent
     |> Array.toList
-    |> buildGrid
+    |> buildState
 
 let run (input: string) =
     let state = parse input
 
-    let bounds =
-        state.Grid.Keys |> Seq.toList |> findBounds
-
-    printfn $"STATE {state}"
+    Utils.printGrid state

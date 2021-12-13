@@ -14,7 +14,7 @@ let sample =
 
 [<Test>]
 let Part1 () =
-    Assert.AreEqual("7,3", y2018.day13.part1.run sample)
+    Assert.AreEqual("7,3",Aoc.Year2018.Day13.Part1.run sample)
     Assert.Pass()
 
 [<EntryPoint>]
