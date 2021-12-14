@@ -1,20 +1,15 @@
 module Aoc.Year2018.Day13.Utils
 
+module G = Aoc.Utils.Geometry
+module S = Aoc.Utils.String
+module T = Aoc.Utils.Types
+
 open System.Collections.Generic
-
-[<Struct>]
-type Point = { X: int; Y: int }
-
-type Direction =
-    | North
-    | South
-    | East
-    | West
 
 type Piece =
     | HorizLine
     | VertLine
-    | Turn of Direction * Direction
+    | Turn of T.Direction * T.Direction
     | Intersect
     | CartUp
     | CartDown
@@ -28,20 +23,20 @@ type Turn =
 
 [<Struct>]
 type Cart =
-    { Loc: Point
-      Dir: Direction
+    { Loc: G.Point
+      Dir: T.Direction
       NextTurn: Turn
       IsCrashed: bool }
 
 [<Struct>]
 type State =
-    { Grid: Dictionary<Point, Piece>
-      Carts: Dictionary<Point, Cart>
-      Crash: option<Point> }
+    { Grid: Dictionary<G.Point, Piece>
+      Carts: Dictionary<G.Point, Cart>
+      Crash: option<G.Point> }
 
 let newState () =
-    { Grid = Dictionary<Point, Piece>()
-      Carts = Dictionary<Point, Cart>()
+    { Grid = Dictionary<G.Point, Piece>()
+      Carts = Dictionary<G.Point, Cart>()
       Crash = None }
 
 let isTrack ch =
@@ -67,10 +62,10 @@ let isCart ch =
 
 let charToDir ch =
     match ch with
-    | '^' -> North
-    | 'v' -> South
-    | '>' -> East
-    | '<' -> West
+    | '^' -> T.North
+    | 'v' -> T.South
+    | '>' -> T.East
+    | '<' -> T.West
     | _ -> failwith $"Invalid direction -{ch}-"
 
 let charToTrack ch =
@@ -84,72 +79,31 @@ let charToTrack ch =
     | '+' -> Intersect
     | _ -> failwith $"Invalid char -{ch}-"
 
-let trimIndent (input: string array) : string array =
-    let strIndent (str: string) =
-        str.ToCharArray()
-        |> Array.takeWhile (fun ch -> System.Char.IsWhiteSpace ch)
-
-    let stripIndent (input: string array) : string array =
-        let indent =
-            Array.fold (fun acc str -> min acc (strIndent str).Length) System.Int32.MaxValue input
-
-        Array.map (fun (str: string) -> str.Substring indent) input
-
-    let findEnds (input: string array) : int * int =
-        let mutable startNdx = 0
-        let mutable endNdx = input.Length - 1
-
-        while input.[startNdx].Trim().Length = 0 do
-            startNdx <- startNdx + 1
-
-        while input.[endNdx].Trim().Length = 0 do
-            endNdx <- endNdx - 1
-
-        (startNdx, endNdx)
-
-    let cutEnds (input: string array) startNdx endNdx : string array =
-        Array.sub input startNdx (endNdx - startNdx + 1)
-
-    input |> findEnds ||> cutEnds input |> stripIndent
-
-let findBounds (pts: Point list) : Point * Point =
-    List.fold
-        (fun (minPt, maxPt) (pt: Point) ->
-            ({ X = min pt.X minPt.X
-               Y = min pt.Y minPt.Y },
-             { X = max pt.X maxPt.X
-               Y = max pt.Y maxPt.Y }))
-        ({ X = System.Int32.MaxValue
-           Y = System.Int32.MaxValue },
-         { X = System.Int32.MinValue
-           Y = System.Int32.MinValue })
-        pts
-
 let printGrid state =
     let (minPt, maxPt) =
-        state.Grid.Keys |> Seq.toList |> findBounds
+        state.Grid.Keys |> Seq.toList |> G.findBounds
 
     let pieceToChar piece =
         match piece with
         | HorizLine -> '-'
         | VertLine -> '|'
-        | Turn (East, North) -> '\\'
-        | Turn (West, North) -> '/'
-        | Turn (East, South) -> '/'
-        | Turn (West, South) -> '\\'
+        | Turn (T.East, T.North) -> '\\'
+        | Turn (T.West, T.North) -> '/'
+        | Turn (T.East, T.South) -> '/'
+        | Turn (T.West, T.South) -> '\\'
         | Intersect -> '+'
         | _ -> failwith $"Invalid piece {piece}"
 
     let cartToPiece cart =
         match cart.Dir with
-        | North -> '^'
-        | South -> 'v'
-        | East -> '>'
-        | West -> '<'
+        | T.North -> '^'
+        | T.South -> 'v'
+        | T.East -> '>'
+        | T.West -> '<'
 
     for y in minPt.Y .. maxPt.Y do
         for x in minPt.X .. maxPt.X do
-            let key = { X = x; Y = y }
+            let key: G.Point = { X = x; Y = y }
 
             if state.Crash.IsSome && state.Crash.Value = key then
                 printf "X"
@@ -175,34 +129,37 @@ let isVertLine state pt =
 let buildState (lines: string list) =
     let mutable state = newState ()
 
-    let updateTurns (turns: Point list) =
-        for turn in turns do
+    let rec updateTurns (turns: G.Point list) =
+        match turns with
+        | [] -> ()
+        | turn :: rest ->
             let horiz =
                 if isHorizLine state { turn with X = turn.X + 1 } then
-                    East
+                    T.East
                 elif isHorizLine state { turn with X = turn.X - 1 } then
-                    West
+                    T.West
                 else
                     failwith $"No horizontal part for turn {turn}"
 
             let vert =
                 if isVertLine state { turn with Y = turn.Y - 1 } then
-                    North
+                    T.North
                 elif isVertLine state { turn with Y = turn.Y + 1 } then
-                    South
+                    T.South
                 else
                     failwith $"No vertical part for turn {turn}"
 
             state.Grid.Add(turn, Turn(horiz, vert))
+            updateTurns rest
 
     let rec parseLines lines y =
-        let mutable turns: Point list = []
+        let mutable turns: G.Point list = []
 
         match lines with
         | [] -> ()
         | (next: string) :: rest ->
             for x in 0 .. next.Length - 1 do
-                let loc = { X = x; Y = y }
+                let loc: G.Point = { X = x; Y = y }
 
                 match next.[x] with
                 | ch when isTurn ch -> turns <- loc :: turns
@@ -224,10 +181,9 @@ let buildState (lines: string list) =
     parseLines lines 0
     state
 
-
 let parse (input: string) =
     input.Split '\n'
-    |> trimIndent
+    |> S.trimIndent
     |> Array.toList
     |> buildState
 
@@ -238,34 +194,34 @@ let move (state: State) (cart: Cart) =
 
     newLoc <-
         match cart.Dir with
-        | North -> { cart.Loc with Point.Y = cart.Loc.Y - 1 }
-        | South -> { cart.Loc with Point.Y = cart.Loc.Y + 1 }
-        | East -> { cart.Loc with Point.X = cart.Loc.X + 1 }
-        | West -> { cart.Loc with Point.X = cart.Loc.X - 1 }
+        | T.North -> { cart.Loc with Y = cart.Loc.Y - 1 }
+        | T.South -> { cart.Loc with Y = cart.Loc.Y + 1 }
+        | T.East -> { cart.Loc with X = cart.Loc.X + 1 }
+        | T.West -> { cart.Loc with X = cart.Loc.X - 1 }
 
     newDir <-
         match state.Grid.[newLoc] with
         | HorizLine
         | VertLine -> cart.Dir
-        | Turn (East, North) ->
+        | Turn (T.East, T.North) ->
             match cart.Dir with
-            | South -> East
-            | West -> North
+            | T.South -> T.East
+            | T.West -> T.North
             | _ -> failwith $"Invalid dir {cart}"
-        | Turn (West, North) ->
+        | Turn (T.West, T.North) ->
             match cart.Dir with
-            | South -> West
-            | East -> North
+            | T.South -> T.West
+            | T.East -> T.North
             | _ -> failwith $"Invalid dir {cart}"
-        | Turn (East, South) ->
+        | Turn (T.East, T.South) ->
             match cart.Dir with
-            | North -> East
-            | West -> South
+            | T.North -> T.East
+            | T.West -> T.South
             | _ -> failwith $"Invalid dir {cart}"
-        | Turn (West, South) ->
+        | Turn (T.West, T.South) ->
             match cart.Dir with
-            | North -> West
-            | East -> South
+            | T.North -> T.West
+            | T.East -> T.South
             | _ -> failwith $"Invalid dir {cart}"
         | Intersect ->
             match cart.NextTurn with
@@ -273,18 +229,18 @@ let move (state: State) (cart: Cart) =
                 (newTurn <- Straight
 
                  match cart.Dir with
-                 | North -> West
-                 | South -> East
-                 | East -> North
-                 | West -> South)
+                 | T.North -> T.West
+                 | T.South -> T.East
+                 | T.East -> T.North
+                 | T.West -> T.South)
             | Right ->
                 (newTurn <- Left
 
                  match cart.Dir with
-                 | North -> East
-                 | South -> West
-                 | East -> South
-                 | West -> North)
+                 | T.North -> T.East
+                 | T.South -> T.West
+                 | T.East -> T.South
+                 | T.West -> T.North)
             | Straight ->
                 (newTurn <- Right
                  cart.Dir)
@@ -296,9 +252,9 @@ let move (state: State) (cart: Cart) =
         NextTurn = newTurn }
 
 let tick (state: State) =
-    let mutable crash: option<Point> = None
+    let mutable crash: option<G.Point> = None
 
-    let rec loop locs =
+    let rec processCarts locs =
         match locs with
         | [] -> ()
         | loc :: rest ->
@@ -306,7 +262,7 @@ let tick (state: State) =
 
             if cart.IsCrashed then
                 state.Carts.Remove loc |> ignore
-                loop rest
+                processCarts rest
             else
                 let newCart = move state cart
 
@@ -317,15 +273,13 @@ let tick (state: State) =
                     state.Carts.[newCart.Loc] <- newCart
 
                 state.Carts.Remove cart.Loc |> ignore
-                loop rest
+                processCarts rest
 
-    let sortedCarts =
-        state.Carts.Values
-        |> Seq.toList
-        |> List.sortBy (fun cart -> cart.Loc.Y * 1000 + cart.Loc.X)
-        |> List.map (fun cart -> cart.Loc)
-
-    loop sortedCarts
+    state.Carts.Values
+    |> Seq.toList
+    |> List.sortBy (fun cart -> cart.Loc.Y * 1000 + cart.Loc.X)
+    |> List.map (fun cart -> cart.Loc)
+    |> processCarts
 
     for loc in state.Carts.Keys do
         if state.Carts.[loc].IsCrashed then

@@ -6,13 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Utils.fs" />
-    <Compile Include="Part1.fs" />
-    <Compile Include="Part2.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\utils\utils.fsproj" />
+    <Compile Include="Types.fs" />
+    <Compile Include="Geometry.fs" />
+    <Compile Include="String.fs" />
   </ItemGroup>
 
 </Project>

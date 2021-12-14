@@ -1,11 +1,13 @@
 ﻿module Aoc.Year2018.Day13.Part1
 
-module Utils = Aoc.Year2018.Day13.Utils
+module G = Aoc.Utils.Geometry
+
+let rec runTicks (state: Utils.State) =
+    match state.Crash with
+    | None -> runTicks (Utils.tick state)
+    | Some c -> c
+
+let getAnswer (crash: G.Point) = $"{crash.X},{crash.Y}"
 
 let run (input: string) =
-    let mutable state = Utils.parse input
-
-    while state.Crash.IsNone do
-        state <- Utils.tick state
-
-    $"{state.Crash.Value.X},{state.Crash.Value.Y}"
+    Utils.parse input |> runTicks |> getAnswer
