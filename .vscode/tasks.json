@@ -9,12 +9,13 @@
             "command": "dotnet",
             "args": [
                 "watch",
-                "--project",
-                "src/Runner/Runner.fsproj",
                 "run",
                 "-c",
                 "release",
             ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/Runner"
+            },
             "problemMatcher": []
         },
         {
@@ -23,11 +24,12 @@
             "command": "dotnet",
             "args": [
                 "run",
-                "--project",
-                "src/Runner/Runner.fsproj",
                 "-c",
                 "release",
             ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/Runner"
+            },
             "problemMatcher": []
         },
         {
@@ -36,12 +38,27 @@
             "command": "dotnet",
             "args": [
                 "watch",
-                "--project",
-                "test/2018/Day13/Day13Test.fsproj",
                 "test",
                 "-c",
                 "release",
             ],
+            "options": {
+                "cwd": "${workspaceFolder}/test/2018/Day13"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "-c",
+                "release",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/test/2018/Day13"
+            },
             "problemMatcher": []
         },
         {
