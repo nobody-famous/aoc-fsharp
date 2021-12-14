@@ -1,4 +1,3 @@
-﻿module y2018.day9.part1
+﻿module Aoc.Year2018.Day9.Part1
 
-
-let run (input: string) = utils.parse input |> utils.playGame
+let run (input: string) = Utils.parse input |> Utils.playGame

@@ -1,4 +1,4 @@
-module y2018.day1.utils
+module Aoc.Year2018.Day1.Utils
 
 let parse (input: string) =
     input.Split '\n'

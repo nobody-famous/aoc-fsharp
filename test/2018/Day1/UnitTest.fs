@@ -15,13 +15,13 @@ let sample =
 
 [<Test>]
 let Part1 () =
-    let answer = y2018.day1.part1.run sample
+    let answer = Aoc.Year2018.Day1.Part1.run sample
 
     Assert.AreEqual(3, answer)
 
 [<Test>]
 let Part2 () =
-    let answer = y2018.day1.part2.run sample
+    let answer = Aoc.Year2018.Day1.Part2.run sample
 
     Assert.AreEqual(2, answer)
 

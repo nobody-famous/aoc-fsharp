@@ -1,5 +1,3 @@
-﻿module y2018.day1.part1
+﻿module Aoc.Year2018.Day1.Part1
 
-module utils = y2018.day1.utils
-
-let run (input: string) = utils.parse input |> List.sum
+let run (input: string) = Utils.parse input |> List.sum

@@ -1,4 +1,4 @@
-module y2018.day1.part2
+module Aoc.Year2018.Day1.Part2
 
 open System.Collections.Generic
 
@@ -17,4 +17,4 @@ let findDupe origNums =
 
     loop origNums 0 (HashSet<int>())
 
-let run (input: string) = utils.parse input |> findDupe
+let run (input: string) = Utils.parse input |> findDupe
