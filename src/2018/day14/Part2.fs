@@ -1,22 +1,43 @@
 ﻿module Aoc.Year2018.Day14.Part2
 
-let endsWith (state: Utils.State) target =
-    let len = Array.length target
-    target = state.Scores[ state.Next - len .. state.Next - 1 ]
+let matches (first: Utils.IntList) startNdx (second: Utils.IntList) =
+    let mutable equal =
+        first.Count >= second.Count && startNdx >= 0
 
-let run (input: string) =
-    let recipes = input |> int
+    let mutable sndNdx = 0
+    let endNdx = startNdx + second.Count - 1
 
-    let target =
-        input
-        |> Seq.map (fun ch -> int ch - int '0')
-        |> Seq.toArray
+    for ndx in startNdx .. endNdx do
+        if equal && first.Item(ndx) <> second.Item(sndNdx) then
+            equal <- false
 
-    let mutable state = Utils.newState recipes
+        sndNdx <- sndNdx + 1
 
-    while not (endsWith state target) do
+    equal
+
+let rec findRecipes (state: byref<Utils.State>) (target: Utils.IntList) =
+    let ndx = state.Scores.Count - target.Count
+
+    match state with
+    | s when matches state.Scores ndx target -> ndx
+    | s when matches state.Scores (ndx - 1) target -> (ndx - 1)
+    | _ ->
         let score = Utils.createNewRecipe &state
         Utils.addNewScore &state score
         Utils.updateElfs &state
 
-    state.Next - Array.length target
+        findRecipes &state target
+
+let buildTarget input =
+    let target = Utils.IntList()
+
+    for item in input do
+        target.Add(int item - int '0')
+
+    target
+
+let run (input: string) =
+    let target = buildTarget input
+    let mutable state = Utils.newState ()
+
+    findRecipes &state target

@@ -1,44 +1,33 @@
 module Aoc.Year2018.Day14.Utils
 
+type IntList = System.Collections.Generic.List<int>
+
 type State =
     { mutable Elf1: int
       mutable Elf2: int
-      mutable Next: int
-      Scores: int array }
+      Scores: IntList }
 
-let newState recipes =
-    { Elf1 = 0
-      Elf2 = 1
-      Next = 2
-      Scores =
-        Array.init (recipes + 10) (fun n ->
-            match n with
-            | 0 -> 3
-            | 1 -> 7
-            | _ -> 0) }
+let newState () =
+    let scores = IntList()
+
+    scores.Add(3)
+    scores.Add(7)
+
+    { Elf1 = 0; Elf2 = 1; Scores = scores }
 
 let createNewRecipe (state: byref<State>) =
     state.Scores.[state.Elf1]
     + state.Scores.[state.Elf2]
 
 let addNewScore (state: byref<State>) (score: int) =
-    let mutable tmp = score
+    if score >= 10 then state.Scores.Add(1)
 
-    if tmp >= 10 then
-        if state.Next < state.Scores.Length then
-            state.Scores.[state.Next] <- 1
-            state.Next <- state.Next + 1
-
-        tmp <- tmp % 10
-
-    if state.Next < state.Scores.Length then
-        state.Scores.[state.Next] <- tmp
-        state.Next <- state.Next + 1
+    state.Scores.Add(score % 10)
 
 let pickNewCurrent (state: State) cur =
     let score = state.Scores.[cur]
 
-    (cur + score + 1) % state.Next
+    (cur + score + 1) % state.Scores.Count
 
 let updateElf1 (state: byref<State>) =
     state.Elf1 <- pickNewCurrent state state.Elf1
@@ -51,12 +40,12 @@ let updateElfs (state: byref<State>) =
     updateElf2 &state
 
 let printRecipes (state: State) =
-    for ndx in 0 .. state.Next - 1 do
-        let score = state.Scores.[ndx]
+    for ndx in 0 .. state.Scores.Count - 1 do
+        let score = state.Scores.Item(ndx)
 
         match ndx with
         | n when n = state.Elf1 -> printf $"({score})"
         | n when n = state.Elf2 -> printf $"[{score}]"
-        | _ -> printf $" {score} "
+        | _ -> printf $" {score}"
 
     printfn ""

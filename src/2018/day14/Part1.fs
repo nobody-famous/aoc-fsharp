@@ -2,13 +2,13 @@
 
 let run (input: string) =
     let target = input |> int
-    let mutable state = Utils.newState target
+    let mutable state = Utils.newState ()
 
-    while state.Next < state.Scores.Length do
+    for _ in 1 .. target + 10 do
         let score = Utils.createNewRecipe &state
         Utils.addNewScore &state score
         Utils.updateElfs &state
 
-    state.Scores[target..target + 9]
-    |> Array.map (fun item -> string item)
+    state.Scores.GetRange(target, 10)
+    |> Seq.map (fun item -> string item)
     |> String.concat ""
