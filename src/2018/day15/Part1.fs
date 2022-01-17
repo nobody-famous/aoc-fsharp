@@ -95,13 +95,41 @@ let doAttack grid (targets: G.Point seq) =
     for target in targets do
         printfn $"  ATTACK {target.X},{target.Y}"
 
+let getMoveTargets (grid: Grid) piece =
+    grid
+    |> Seq.filter (fun (kv: KVP) ->
+        match kv.Value with
+        | Goblin _ ->
+            match piece with
+            | Elf _ -> true
+            | _ -> false
+        | Elf _ ->
+            match piece with
+            | Goblin _ -> true
+            | _ -> false
+        | _ -> false)
+    |> Seq.map (fun (kv: KVP) -> neighborPoints kv.Key)
+    |> Seq.concat
+    |> Seq.filter (fun pt ->
+        match grid.TryGetValue pt with
+        | true, Empty -> true
+        | _ -> false)
+
+let doMove grid ((pt: G.Point), piece) =
+    printfn $"  MOVE {pt.X} {pt.Y} {piece}"
+
+    let targets = getMoveTargets grid piece
+
+    for t in targets do
+        printfn $"    {t.X},{t.Y}"
+
 let doAction grid (item: G.Point * Piece) =
     let (pt, piece) = item
     printfn $"{pt.X},{pt.Y} {piece}"
 
     match getToAttack grid item with
     | targets when Seq.length targets > 0 -> doAttack grid targets
-    | _ -> printfn "NO ATTACK"
+    | _ -> doMove grid item
 
 let round grid =
     let toAct = getToAct grid
