@@ -115,6 +115,21 @@ let getMoveTargets (grid: Grid) piece =
         | true, Empty -> true
         | _ -> false)
 
+type DfsState =
+    { seen: Set<G.Point>
+      curPath: G.Point list
+      paths: G.Point list list }
+
+let newDfsState () =
+    { seen = Set.empty
+      curPath = []
+      paths = [] }
+
+let getPaths (grid: Grid) (startPt: G.Point) (endPt: G.Point) =
+    let walk (state: DfsState) = 0
+
+    newDfsState () |> walk
+
 let doMove grid ((pt: G.Point), piece) =
     printfn $"  MOVE {pt.X} {pt.Y} {piece}"
 
