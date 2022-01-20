@@ -117,18 +117,42 @@ let getMoveTargets (grid: Grid) piece =
 
 type DfsState =
     { seen: Set<G.Point>
-      curPath: G.Point list
-      paths: G.Point list list }
+      path: G.Point list }
 
-let newDfsState () =
-    { seen = Set.empty
-      curPath = []
-      paths = [] }
+let newDfsState () = { seen = Set.empty; path = [] }
 
 let getPaths (grid: Grid) (startPt: G.Point) (endPt: G.Point) =
-    let walk (state: DfsState) = 0
+    let keepShortest paths =
+        if List.isEmpty paths then
+            []
+        else
+            let shortest =
+                List.map (fun p -> List.length p) paths
+                |> List.min
 
-    newDfsState () |> walk
+
+            List.filter (fun p -> List.length p = shortest) paths
+
+    let rec walk (pt: G.Point) (state: DfsState) =
+        if pt = endPt then
+            [ List.rev state.path ]
+        else
+            neighborPoints pt
+            |> List.filter (fun item -> not (state.seen.Contains item))
+            |> List.filter (fun item ->
+                match grid.TryGetValue item with
+                | true, Empty -> true
+                | _ -> false)
+            |> List.map (fun k ->
+                walk
+                    k
+                    { state with
+                        seen = state.seen.Add pt
+                        path = k :: state.path })
+            |> List.concat
+            |> keepShortest
+
+    newDfsState () |> walk startPt
 
 let doMove grid ((pt: G.Point), piece) =
     printfn $"  MOVE {pt.X} {pt.Y} {piece}"
@@ -137,6 +161,14 @@ let doMove grid ((pt: G.Point), piece) =
 
     for t in targets do
         printfn $"    {t.X},{t.Y}"
+
+        for path in getPaths grid pt t do
+            printf "     "
+
+            for p in path do
+                printf $" ({p.X},{p.Y})"
+
+            printfn ""
 
 let doAction grid (item: G.Point * Piece) =
     let (pt, piece) = item
