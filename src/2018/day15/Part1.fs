@@ -122,17 +122,6 @@ type DfsState =
 let newDfsState () = { seen = Set.empty; path = [] }
 
 let getPaths (grid: Grid) (startPt: G.Point) (endPt: G.Point) =
-    let keepShortest paths =
-        if List.isEmpty paths then
-            []
-        else
-            let shortest =
-                List.map (fun p -> List.length p) paths
-                |> List.min
-
-
-            List.filter (fun p -> List.length p = shortest) paths
-
     let rec walk (pt: G.Point) (state: DfsState) =
         if pt = endPt then
             [ List.rev state.path ]
@@ -150,25 +139,32 @@ let getPaths (grid: Grid) (startPt: G.Point) (endPt: G.Point) =
                         seen = state.seen.Add pt
                         path = k :: state.path })
             |> List.concat
-            |> keepShortest
 
     newDfsState () |> walk startPt
 
 let doMove grid ((pt: G.Point), piece) =
     printfn $"  MOVE {pt.X} {pt.Y} {piece}"
 
-    let targets = getMoveTargets grid piece
+    let keepShortest paths =
+        if Seq.isEmpty paths then
+            paths
+        else
+            let shortest =
+                Seq.map (fun p -> List.length p) paths |> Seq.min
 
-    for t in targets do
-        printfn $"    {t.X},{t.Y}"
 
-        for path in getPaths grid pt t do
-            printf "     "
+            Seq.filter (fun p -> List.length p = shortest) paths
 
-            for p in path do
-                printf $" ({p.X},{p.Y})"
+    let pt =
+        getMoveTargets grid piece
+        |> Seq.map (fun t -> getPaths grid pt t)
+        |> Seq.concat
+        |> keepShortest
+        |> Seq.map (fun p -> List.head p)
+        |> readOrder
+        |> Seq.head
 
-            printfn ""
+    printfn $" ({pt.X},{pt.Y})"
 
 let doAction grid (item: G.Point * Piece) =
     let (pt, piece) = item
