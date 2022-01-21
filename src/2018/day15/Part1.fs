@@ -91,9 +91,30 @@ let getToAttack (grid: Grid) (item: G.Point * Piece) =
             | _ -> false
         | _ -> false)
 
-let doAttack grid (targets: G.Point seq) =
-    for target in targets do
-        printfn $"  ATTACK {target.X},{target.Y}"
+let doAttack (grid: Grid) (targets: G.Point seq) =
+    let least =
+        targets
+        |> Seq.map (fun t ->
+            match grid.TryGetValue t with
+            | true, Goblin hp
+            | true, Elf hp -> hp
+            | _ -> failwith "doAttach SHOULD NOT BE HERE")
+        |> Seq.min
+
+    let opponent =
+        targets
+        |> Seq.filter (fun t ->
+            match grid.TryGetValue t with
+            | true, Goblin hp
+            | true, Elf hp -> hp = least
+            | _ -> failwith "doAttach SHOULD NOT BE HERE")
+        |> readOrder
+        |> Seq.head
+
+    match grid.TryGetValue opponent with
+    | true, Goblin hp -> grid.[opponent] <- Goblin(hp - 3)
+    | true, Elf hp -> grid.[opponent] <- Elf(hp - 3)
+    | _ -> failwith "doAttach SHOULD NOT BE HERE"
 
 let getMoveTargets (grid: Grid) piece =
     grid
@@ -164,7 +185,7 @@ let doMove grid ((pt: G.Point), piece) =
         |> readOrder
         |> Seq.head
 
-    printfn $" ({pt.X},{pt.Y})"
+    printfn $"  ({pt.X},{pt.Y})"
 
 let doAction grid (item: G.Point * Piece) =
     let (pt, piece) = item
@@ -188,5 +209,12 @@ let run (input: string) =
     printGrid grid
 
     round grid |> ignore
+
+    grid
+    |> Seq.iter (fun (kv: KVP) ->
+        match kv.Value with
+        | Goblin _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
+        | Elf _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
+        | _ -> ())
 
     0
