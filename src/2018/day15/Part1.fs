@@ -112,8 +112,16 @@ let doAttack (grid: Grid) (targets: G.Point seq) =
         |> Seq.head
 
     match grid.TryGetValue opponent with
-    | true, Goblin hp -> grid.[opponent] <- Goblin(hp - 3)
-    | true, Elf hp -> grid.[opponent] <- Elf(hp - 3)
+    | true, Goblin hp ->
+        if hp <= 3 then
+            grid.[opponent] <- Empty
+        else
+            grid.[opponent] <- Goblin(hp - 3)
+    | true, Elf hp ->
+        if hp <= 3 then
+            grid.[opponent] <- Empty
+        else
+            grid.[opponent] <- Elf(hp - 3)
     | _ -> failwith "doAttach SHOULD NOT BE HERE"
 
 let getMoveTargets (grid: Grid) piece =
@@ -164,8 +172,6 @@ let getPaths (grid: Grid) (startPt: G.Point) (endPt: G.Point) =
     newDfsState () |> walk startPt
 
 let doMove grid ((pt: G.Point), piece) =
-    printfn $"  MOVE {pt.X} {pt.Y} {piece}"
-
     let keepShortest paths =
         if Seq.isEmpty paths then
             paths
@@ -176,45 +182,86 @@ let doMove grid ((pt: G.Point), piece) =
 
             Seq.filter (fun p -> List.length p = shortest) paths
 
-    let pt =
+    let newPts =
         getMoveTargets grid piece
         |> Seq.map (fun t -> getPaths grid pt t)
         |> Seq.concat
         |> keepShortest
         |> Seq.map (fun p -> List.head p)
         |> readOrder
-        |> Seq.head
 
-    printfn $"  ({pt.X},{pt.Y})"
+    if not (Seq.isEmpty newPts) then
+        let newPt = Seq.head newPts
+        grid.[pt] <- Empty
+        grid.[newPt] <- piece
+
+        match getToAttack grid (newPt, piece) with
+        | targets when Seq.length targets > 0 -> doAttack grid targets
+        | _ -> ()
 
 let doAction grid (item: G.Point * Piece) =
-    let (pt, piece) = item
-    printfn $"{pt.X},{pt.Y} {piece}"
-
     match getToAttack grid item with
     | targets when Seq.length targets > 0 -> doAttack grid targets
     | _ -> doMove grid item
 
+let combatEnds (grid: Grid) =
+    let noGoblins =
+        Seq.fold
+            (fun acc (kv: KVP) ->
+                acc
+                && match kv.Value with
+                   | Goblin _ -> false
+                   | _ -> true)
+            true
+            grid
+
+    let noElves =
+        Seq.fold
+            (fun acc (kv: KVP) ->
+                acc
+                && match kv.Value with
+                   | Elf _ -> false
+                   | _ -> true)
+            true
+            grid
+
+    noGoblins || noElves
+
 let round grid =
     let toAct = getToAct grid
+    let mutable completed = true
 
     for item in toAct do
-        doAction grid item
+        if combatEnds grid then
+            completed <- false
 
-    grid
+        doAction grid item
+    
+    completed
 
 let run (input: string) =
     let grid = parse input
+    let mutable roundNumber = 0
 
-    printGrid grid
+    while not (combatEnds grid) do
+        if round grid then
+            roundNumber <- roundNumber + 1
 
-    round grid |> ignore
+        // printfn $"ROUND {roundNumber}"
+        // printGrid grid
 
-    grid
-    |> Seq.iter (fun (kv: KVP) ->
-        match kv.Value with
-        | Goblin _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
-        | Elf _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
-        | _ -> ())
+        // grid
+        // |> Seq.iter (fun (kv: KVP) ->
+        //     match kv.Value with
+        //     | Goblin _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
+        //     | Elf _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
+        //     | _ -> ())
 
-    0
+    roundNumber
+    * Seq.sumBy
+        (fun (kv: KVP) ->
+            match kv.Value with
+            | Goblin hp -> hp
+            | Elf hp -> hp
+            | _ -> 0)
+        grid
