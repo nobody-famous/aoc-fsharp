@@ -17,7 +17,7 @@ type PieceMap = System.Collections.Generic.Dictionary<G.Point, Piece>
 type State =
     { Board: PointSet
       Goblins: PieceMap
-      Elfs: PieceMap }
+      Elves: PieceMap }
 
 let HitPoints = 200
 
@@ -25,7 +25,7 @@ let parseLines (lines: string array) =
     let state =
         { Board = PointSet()
           Goblins = PieceMap()
-          Elfs = PieceMap() }
+          Elves = PieceMap() }
 
     let parseRow y (line: string) =
         Seq.iteri
@@ -41,7 +41,7 @@ let parseLines (lines: string array) =
 
                 | 'E' ->
                     state.Board.Add(pt) |> ignore
-                    state.Elfs.Add(pt, Elf(HitPoints))
+                    state.Elves.Add(pt, Elf(HitPoints))
                 | _ -> failwith $"Invalid character {int ch}")
             line
 
@@ -61,7 +61,7 @@ let printGrid (state: State) =
 
             if state.Goblins.ContainsKey pt then
                 printf "G"
-            else if state.Elfs.ContainsKey pt then
+            else if state.Elves.ContainsKey pt then
                 printf "E"
             else if state.Board.Contains pt then
                 printf "."
@@ -82,11 +82,11 @@ let getUnitGroup state pt =
     if state.Goblins.ContainsKey pt then
         state.Goblins
     else
-        state.Elfs
+        state.Elves
 
 let getOpponentGroup state pt =
     if state.Goblins.ContainsKey pt then
-        state.Elfs
+        state.Elves
     else
         state.Goblins
 
@@ -104,7 +104,7 @@ let readOrder pts =
 //         | _ -> failwith "SHOULD NOT HAPPEN")
 
 let getToAct (state: State) =
-    [ Seq.map (fun (kv: KVP) -> kv.Key) state.Elfs
+    [ Seq.map (fun (kv: KVP) -> kv.Key) state.Elves
       Seq.map (fun (kv: KVP) -> kv.Key) state.Goblins ]
     |> Seq.concat
     |> readOrder
@@ -123,7 +123,7 @@ let getToAttack (state: State) (pt: G.Point) =
 
 let doAttack (state: State) (targets: G.Point seq) =
     let group =
-        getOpponentGroup state (Seq.head targets)
+        getUnitGroup state (Seq.head targets)
 
     let least =
         targets
@@ -160,7 +160,7 @@ let doAttack (state: State) (targets: G.Point seq) =
 let isSpaceEmpty (state: State) (pt: G.Point) =
     state.Board.Contains pt
     && not (state.Goblins.ContainsKey pt)
-    && not (state.Elfs.ContainsKey pt)
+    && not (state.Elves.ContainsKey pt)
 
 let getMoveTargets (state: State) (pt: G.Point) =
     getOpponentGroup state pt
@@ -223,8 +223,6 @@ let doMove (state: State) (pt: G.Point) =
         let newPt = Seq.head newPts
         let group = getUnitGroup state pt
 
-        printfn $"DO MOVE {pt.X},{pt.Y} -> {newPt.X},{newPt.Y}"
-
         let piece = group.[pt]
 
         group.Remove pt |> ignore
@@ -240,7 +238,7 @@ let doAction state (pt: G.Point) =
     | _ -> doMove state pt
 
 let combatEnds (state: State) =
-    Seq.length state.Elfs = 0
+    Seq.length state.Elves = 0
     || Seq.length state.Goblins = 0
 
 let round state =
@@ -259,14 +257,21 @@ let run (input: string) =
     let state = parse input
     let mutable roundNumber = 0
 
-    printGrid state
-    round state |> ignore
-    printGrid state
+    // printGrid state
+    // round state |> ignore
+    // printGrid state
 
-    // while not (combatEnds state) do
-    //     printfn "BEFORE ROUND"
-    //     if round state then
-    //         roundNumber <- roundNumber + 1
+    // printfn "GOBLINS"
+    // for kv in state.Goblins do
+    //     printfn $" {kv.Key.X},{kv.Key.Y} {kv.Value}"
+
+    // printfn "ELVES"
+    // for kv in state.Elves do
+    //     printfn $" {kv.Key.X},{kv.Key.Y} {kv.Value}"
+
+    while not (combatEnds state) do
+        if round state then
+            roundNumber <- roundNumber + 1
 
     //     printGrid state
 
@@ -282,7 +287,7 @@ let run (input: string) =
 
     let group =
         if Seq.length state.Goblins = 0 then
-            state.Elfs
+            state.Elves
         else
             state.Goblins
 
