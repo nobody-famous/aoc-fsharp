@@ -11,40 +11,62 @@ type Piece =
 
 type Grid = System.Collections.Generic.Dictionary<G.Point, Piece>
 type KVP = System.Collections.Generic.KeyValuePair<G.Point, Piece>
+type PointSet = System.Collections.Generic.HashSet<G.Point>
+type PieceMap = System.Collections.Generic.Dictionary<G.Point, Piece>
+
+type State =
+    { Board: PointSet
+      Goblins: PieceMap
+      Elfs: PieceMap }
 
 let HitPoints = 200
 
 let parseLines (lines: string array) =
-    let grid = Grid()
+    let state =
+        { Board = PointSet()
+          Goblins = PieceMap()
+          Elfs = PieceMap() }
 
     let parseRow y (line: string) =
         Seq.iteri
             (fun x ch ->
+                let pt = { G.X = x; G.Y = y }
+
                 match ch with
-                | '.' -> grid.Add({ G.X = x; G.Y = y }, Empty)
-                | '#' -> grid.Add({ G.X = x; G.Y = y }, Wall)
-                | 'G' -> grid.Add({ G.X = x; G.Y = y }, Goblin(HitPoints))
-                | 'E' -> grid.Add({ G.X = x; G.Y = y }, Elf(HitPoints))
+                | '.' -> state.Board.Add(pt) |> ignore
+                | '#' -> ()
+                | 'G' ->
+                    state.Board.Add(pt) |> ignore
+                    state.Goblins.Add(pt, Goblin(HitPoints))
+
+                | 'E' ->
+                    state.Board.Add(pt) |> ignore
+                    state.Elfs.Add(pt, Elf(HitPoints))
                 | _ -> failwith $"Invalid character {int ch}")
             line
 
     Array.iteri parseRow lines
-    grid
+    state
 
 let parse (input: string) =
     input.Split '\n' |> S.trimIndent |> parseLines
 
-let printGrid (grid: Grid) =
-    let (minPt, maxPt) = grid.Keys |> Seq.toList |> G.findBounds
+let printGrid (state: State) =
+    let (minPt, maxPt) =
+        state.Board |> Seq.toList |> G.findBounds
 
     for y in minPt.Y .. maxPt.Y do
         for x in minPt.X .. maxPt.X do
-            match grid.TryGetValue { X = x; Y = y } with
-            | true, Empty -> printf "."
-            | true, Wall -> printf "#"
-            | true, Goblin _ -> printf "G"
-            | true, Elf _ -> printf "E"
-            | status, piece -> failwith $"PRINT FAILED {status} {piece}"
+            let pt = { G.X = x; G.Y = y }
+
+            if state.Goblins.ContainsKey pt then
+                printf "G"
+            else if state.Elfs.ContainsKey pt then
+                printf "E"
+            else if state.Board.Contains pt then
+                printf "."
+            else
+                printf "#"
 
         printfn ""
 
@@ -56,18 +78,30 @@ let findUnits (grid: Grid) =
         | Elf _ -> true
         | _ -> false)
 
+let getUnitGroup state pt =
+    if state.Goblins.ContainsKey pt then
+        state.Goblins
+    else
+        state.Elfs
+
 let readOrder pts =
     Seq.sortBy (fun (a: G.Point) -> (a.Y * 1000) + a.X) pts
 
-let getToAct grid =
-    grid
-    |> findUnits
-    |> Seq.map (fun item -> item.Key)
+// let getToAct grid =
+//     grid
+//     |> findUnits
+//     |> Seq.map (fun item -> item.Key)
+//     |> readOrder
+//     |> Seq.map (fun pt ->
+//         match grid.TryGetValue pt with
+//         | true, v -> (pt, v)
+//         | _ -> failwith "SHOULD NOT HAPPEN")
+
+let getToAct (state: State) =
+    [ Seq.map (fun (kv: KVP) -> kv.Key) state.Elfs
+      Seq.map (fun (kv: KVP) -> kv.Key) state.Goblins ]
+    |> Seq.concat
     |> readOrder
-    |> Seq.map (fun pt ->
-        match grid.TryGetValue pt with
-        | true, v -> (pt, v)
-        | _ -> failwith "SHOULD NOT HAPPEN")
 
 let neighborPoints (pt: G.Point) =
     [ { G.X = pt.X - 1; G.Y = pt.Y }
@@ -75,74 +109,71 @@ let neighborPoints (pt: G.Point) =
       { G.X = pt.X; G.Y = pt.Y - 1 }
       { G.X = pt.X; G.Y = pt.Y + 1 } ]
 
-let getToAttack (grid: Grid) (item: G.Point * Piece) =
-    let (itemPt, piece) = item
-
-    neighborPoints itemPt
+let getToAttack (state: State) (pt: G.Point) =
+    neighborPoints pt
     |> List.filter (fun pt ->
-        match grid.TryGetValue pt with
-        | true, Goblin _ ->
-            match piece with
-            | Elf _ -> true
-            | _ -> false
-        | true, Elf _ ->
-            match piece with
-            | Goblin _ -> true
-            | _ -> false
-        | _ -> false)
+        if state.Goblins.ContainsKey pt then
+            state.Elfs.ContainsKey pt
+        else if state.Elfs.ContainsKey pt then
+            state.Goblins.ContainsKey pt
+        else
+            false)
 
-let doAttack (grid: Grid) (targets: G.Point seq) =
+let doAttack (state: State) (targets: G.Point seq) =
+    let group =
+        match getUnitGroup state (Seq.head targets) with
+        | g when g = state.Goblins -> state.Elfs
+        | g when g = state.Elfs -> state.Goblins
+        | _ -> failwith "doAttack SHOULD NOT BE HERE"
+
     let least =
         targets
         |> Seq.map (fun t ->
-            match grid.TryGetValue t with
+            match group.TryGetValue t with
             | true, Goblin hp
             | true, Elf hp -> hp
-            | _ -> failwith "doAttach SHOULD NOT BE HERE")
+            | _ -> failwith "doAttack SHOULD NOT BE HERE")
         |> Seq.min
 
     let opponent =
         targets
         |> Seq.filter (fun t ->
-            match grid.TryGetValue t with
+            match group.TryGetValue t with
             | true, Goblin hp
             | true, Elf hp -> hp = least
-            | _ -> failwith "doAttach SHOULD NOT BE HERE")
+            | _ -> failwith "doAttack SHOULD NOT BE HERE")
         |> readOrder
         |> Seq.head
 
-    match grid.TryGetValue opponent with
+    match group.TryGetValue opponent with
     | true, Goblin hp ->
         if hp <= 3 then
-            grid.[opponent] <- Empty
+            group.Remove opponent |> ignore
         else
-            grid.[opponent] <- Goblin(hp - 3)
+            group.[opponent] <- Goblin(hp - 3)
     | true, Elf hp ->
         if hp <= 3 then
-            grid.[opponent] <- Empty
+            group.Remove opponent |> ignore
         else
-            grid.[opponent] <- Elf(hp - 3)
-    | _ -> failwith "doAttach SHOULD NOT BE HERE"
+            group.[opponent] <- Elf(hp - 3)
+    | _ -> failwith "doAttack SHOULD NOT BE HERE"
 
-let getMoveTargets (grid: Grid) piece =
-    grid
-    |> Seq.filter (fun (kv: KVP) ->
-        match kv.Value with
-        | Goblin _ ->
-            match piece with
-            | Elf _ -> true
-            | _ -> false
-        | Elf _ ->
-            match piece with
-            | Goblin _ -> true
-            | _ -> false
-        | _ -> false)
+let isSpaceEmpty (state: State) (pt: G.Point) =
+    state.Board.Contains pt
+    && not (state.Goblins.ContainsKey pt)
+    && not (state.Elfs.ContainsKey pt)
+
+let getMoveTargets (state: State) (pt: G.Point) =
+    let group =
+        match getUnitGroup state pt with
+        | g when g = state.Goblins -> state.Elfs
+        | g when g = state.Elfs -> state.Goblins
+        | _ -> failwith "doAttack SHOULD NOT BE HERE"
+
+    group
     |> Seq.map (fun (kv: KVP) -> neighborPoints kv.Key)
     |> Seq.concat
-    |> Seq.filter (fun pt ->
-        match grid.TryGetValue pt with
-        | true, Empty -> true
-        | _ -> false)
+    |> Seq.filter (fun pt -> isSpaceEmpty state pt)
 
 type DfsState =
     { seen: Set<G.Point>
@@ -150,28 +181,34 @@ type DfsState =
 
 let newDfsState () = { seen = Set.empty; path = [] }
 
-let getPaths (grid: Grid) (startPt: G.Point) (endPt: G.Point) =
-    let rec walk (pt: G.Point) (state: DfsState) =
+let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
+    let mutable shortest = System.Int32.MaxValue
+
+    let rec walk (pt: G.Point) (dfsState: DfsState) =
         if pt = endPt then
-            [ List.rev state.path ]
+            if List.length dfsState.path < shortest then
+                shortest <- List.length dfsState.path
+
+            [ List.rev dfsState.path ]
+        else if List.length dfsState.path > shortest then
+            []
         else
             neighborPoints pt
-            |> List.filter (fun item -> not (state.seen.Contains item))
-            |> List.filter (fun item ->
-                match grid.TryGetValue item with
-                | true, Empty -> true
-                | _ -> false)
+            |> List.filter (fun item -> not (dfsState.seen.Contains item))
+            |> List.filter (fun item -> isSpaceEmpty state item)
             |> List.map (fun k ->
                 walk
                     k
-                    { state with
-                        seen = state.seen.Add pt
-                        path = k :: state.path })
+                    { dfsState with
+                        seen = dfsState.seen.Add pt
+                        path = k :: dfsState.path })
             |> List.concat
 
-    newDfsState () |> walk startPt
+    newDfsState ()
+    |> walk startPt
+    |> List.filter (fun path -> List.length path > 0)
 
-let doMove grid ((pt: G.Point), piece) =
+let doMove (state: State) (pt: G.Point) =
     let keepShortest paths =
         if Seq.isEmpty paths then
             paths
@@ -179,12 +216,11 @@ let doMove grid ((pt: G.Point), piece) =
             let shortest =
                 Seq.map (fun p -> List.length p) paths |> Seq.min
 
-
             Seq.filter (fun p -> List.length p = shortest) paths
 
     let newPts =
-        getMoveTargets grid piece
-        |> Seq.map (fun t -> getPaths grid pt t)
+        getMoveTargets state pt
+        |> Seq.map (fun t -> getPaths state pt t)
         |> Seq.concat
         |> keepShortest
         |> Seq.map (fun p -> List.head p)
@@ -192,70 +228,70 @@ let doMove grid ((pt: G.Point), piece) =
 
     if not (Seq.isEmpty newPts) then
         let newPt = Seq.head newPts
-        grid.[pt] <- Empty
-        grid.[newPt] <- piece
+        let group = getUnitGroup state pt
 
-        match getToAttack grid (newPt, piece) with
-        | targets when Seq.length targets > 0 -> doAttack grid targets
+        printfn $"DO MOVE {pt.X},{pt.Y} -> {newPt.X},{newPt.Y}"
+
+        let piece = group.[pt]
+
+        group.Remove pt |> ignore
+        group.[newPt] <- piece
+
+        match getToAttack state newPt with
+        | targets when Seq.length targets > 0 -> doAttack state targets
         | _ -> ()
 
-let doAction grid (item: G.Point * Piece) =
-    match getToAttack grid item with
-    | targets when Seq.length targets > 0 -> doAttack grid targets
-    | _ -> doMove grid item
+let doAction state (pt: G.Point) =
+    match getToAttack state pt with
+    | targets when Seq.length targets > 0 -> doAttack state targets
+    | _ -> doMove state pt
 
-let combatEnds (grid: Grid) =
-    let noGoblins =
-        Seq.fold
-            (fun acc (kv: KVP) ->
-                acc
-                && match kv.Value with
-                   | Goblin _ -> false
-                   | _ -> true)
-            true
-            grid
+let combatEnds (state: State) =
+    Seq.length state.Elfs = 0
+    || Seq.length state.Goblins = 0
 
-    let noElves =
-        Seq.fold
-            (fun acc (kv: KVP) ->
-                acc
-                && match kv.Value with
-                   | Elf _ -> false
-                   | _ -> true)
-            true
-            grid
-
-    noGoblins || noElves
-
-let round grid =
-    let toAct = getToAct grid
+let round state =
+    let toAct = getToAct state
     let mutable completed = true
 
-    for item in toAct do
-        if combatEnds grid then
+    for pt in toAct do
+        if combatEnds state then
             completed <- false
 
-        doAction grid item
-    
+        doAction state pt
+
     completed
 
 let run (input: string) =
-    let grid = parse input
+    let state = parse input
     let mutable roundNumber = 0
 
-    while not (combatEnds grid) do
-        if round grid then
-            roundNumber <- roundNumber + 1
+    printGrid state
+    round state |> ignore
+    printGrid state
 
-        // printfn $"ROUND {roundNumber}"
-        // printGrid grid
+    // while not (combatEnds state) do
+    //     printfn "BEFORE ROUND"
+    //     if round state then
+    //         roundNumber <- roundNumber + 1
 
-        // grid
-        // |> Seq.iter (fun (kv: KVP) ->
-        //     match kv.Value with
-        //     | Goblin _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
-        //     | Elf _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
-        //     | _ -> ())
+    //     printGrid state
+
+    // printfn $"ROUND {roundNumber}"
+    // printGrid grid
+
+    // grid
+    // |> Seq.iter (fun (kv: KVP) ->
+    //     match kv.Value with
+    //     | Goblin _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
+    //     | Elf _ -> printfn $"({kv.Key.X},{kv.Key.Y}) {kv.Value}"
+    //     | _ -> ())
+
+    let group =
+        if Seq.length state.Goblins = 0 then
+            state.Elfs
+        else
+            state.Goblins
 
     roundNumber
     * Seq.sumBy
@@ -264,4 +300,4 @@ let run (input: string) =
             | Goblin hp -> hp
             | Elf hp -> hp
             | _ -> 0)
-        grid
+        group
