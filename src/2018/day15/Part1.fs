@@ -84,6 +84,12 @@ let getUnitGroup state pt =
     else
         state.Elfs
 
+let getOpponentGroup state pt =
+    if state.Goblins.ContainsKey pt then
+        state.Elfs
+    else
+        state.Goblins
+
 let readOrder pts =
     Seq.sortBy (fun (a: G.Point) -> (a.Y * 1000) + a.X) pts
 
@@ -110,21 +116,14 @@ let neighborPoints (pt: G.Point) =
       { G.X = pt.X; G.Y = pt.Y + 1 } ]
 
 let getToAttack (state: State) (pt: G.Point) =
+    let group = getOpponentGroup state pt
+
     neighborPoints pt
-    |> List.filter (fun pt ->
-        if state.Goblins.ContainsKey pt then
-            state.Elfs.ContainsKey pt
-        else if state.Elfs.ContainsKey pt then
-            state.Goblins.ContainsKey pt
-        else
-            false)
+    |> List.filter (fun pt -> group.ContainsKey pt)
 
 let doAttack (state: State) (targets: G.Point seq) =
     let group =
-        match getUnitGroup state (Seq.head targets) with
-        | g when g = state.Goblins -> state.Elfs
-        | g when g = state.Elfs -> state.Goblins
-        | _ -> failwith "doAttack SHOULD NOT BE HERE"
+        getOpponentGroup state (Seq.head targets)
 
     let least =
         targets
@@ -164,13 +163,7 @@ let isSpaceEmpty (state: State) (pt: G.Point) =
     && not (state.Elfs.ContainsKey pt)
 
 let getMoveTargets (state: State) (pt: G.Point) =
-    let group =
-        match getUnitGroup state pt with
-        | g when g = state.Goblins -> state.Elfs
-        | g when g = state.Elfs -> state.Goblins
-        | _ -> failwith "doAttack SHOULD NOT BE HERE"
-
-    group
+    getOpponentGroup state pt
     |> Seq.map (fun (kv: KVP) -> neighborPoints kv.Key)
     |> Seq.concat
     |> Seq.filter (fun pt -> isSpaceEmpty state pt)
