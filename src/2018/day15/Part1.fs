@@ -122,8 +122,7 @@ let getToAttack (state: State) (pt: G.Point) =
     |> List.filter (fun pt -> group.ContainsKey pt)
 
 let doAttack (state: State) (targets: G.Point seq) =
-    let group =
-        getUnitGroup state (Seq.head targets)
+    let group = getUnitGroup state (Seq.head targets)
 
     let least =
         targets
@@ -147,11 +146,13 @@ let doAttack (state: State) (targets: G.Point seq) =
     match group.TryGetValue opponent with
     | true, Goblin hp ->
         if hp <= 3 then
+            printfn $"REMOVE GOBLIN {opponent.X},{opponent.Y}"
             group.Remove opponent |> ignore
         else
             group.[opponent] <- Goblin(hp - 3)
     | true, Elf hp ->
         if hp <= 3 then
+            printfn $"REMOVE ELF {opponent.X},{opponent.Y}"
             group.Remove opponent |> ignore
         else
             group.[opponent] <- Elf(hp - 3)
@@ -167,6 +168,7 @@ let getMoveTargets (state: State) (pt: G.Point) =
     |> Seq.map (fun (kv: KVP) -> neighborPoints kv.Key)
     |> Seq.concat
     |> Seq.filter (fun pt -> isSpaceEmpty state pt)
+
 
 type DfsState =
     { seen: Set<G.Point>
@@ -197,9 +199,11 @@ let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
                         path = k :: dfsState.path })
             |> List.concat
 
-    newDfsState ()
-    |> walk startPt
-    |> List.filter (fun path -> List.length path > 0)
+    let paths = newDfsState ()
+                |> walk startPt
+                |> List.filter (fun path -> List.length path > 0)
+
+    paths
 
 let doMove (state: State) (pt: G.Point) =
     let keepShortest paths =
@@ -219,10 +223,16 @@ let doMove (state: State) (pt: G.Point) =
         |> Seq.map (fun p -> List.head p)
         |> readOrder
 
+    // printfn $"MOVE {pt.X},{pt.Y}"
+    // for p in newPts do
+    //     printfn $"  {p.X},{p.Y} {isSpaceEmpty state p} {state.Elves.ContainsKey p}"
+    //     printfn "ELVES"
+    //     for kv in state.Elves do
+    //         printfn $" {kv.Key.X},{kv.Key.Y} {kv.Value}"
+
     if not (Seq.isEmpty newPts) then
         let newPt = Seq.head newPts
         let group = getUnitGroup state pt
-
         let piece = group.[pt]
 
         group.Remove pt |> ignore
@@ -249,7 +259,8 @@ let round state =
         if combatEnds state then
             completed <- false
 
-        doAction state pt
+        if not (isSpaceEmpty state pt) then
+            doAction state pt
 
     completed
 
@@ -261,6 +272,13 @@ let run (input: string) =
     // round state |> ignore
     // printGrid state
 
+    while not (combatEnds state) do
+        if round state then
+            roundNumber <- roundNumber + 1
+
+    // printfn $"ROUND {roundNumber}"
+    // printGrid state
+
     // printfn "GOBLINS"
     // for kv in state.Goblins do
     //     printfn $" {kv.Key.X},{kv.Key.Y} {kv.Value}"
@@ -268,15 +286,6 @@ let run (input: string) =
     // printfn "ELVES"
     // for kv in state.Elves do
     //     printfn $" {kv.Key.X},{kv.Key.Y} {kv.Value}"
-
-    while not (combatEnds state) do
-        if round state then
-            roundNumber <- roundNumber + 1
-
-    //     printGrid state
-
-    // printfn $"ROUND {roundNumber}"
-    // printGrid grid
 
     // grid
     // |> Seq.iter (fun (kv: KVP) ->

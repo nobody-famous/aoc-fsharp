@@ -73,9 +73,9 @@ let sample6 =
 [<Test>]
 let Part1 () =
     Assert.AreEqual(27730, Aoc.Year2018.Day15.Part1.run sample)
-    // Assert.AreEqual(36334, Aoc.Year2018.Day15.Part1.run sample2)
-    // Assert.AreEqual(39514, Aoc.Year2018.Day15.Part1.run sample3)
-    // Assert.AreEqual(27755, Aoc.Year2018.Day15.Part1.run sample4)
+    Assert.AreEqual(36334, Aoc.Year2018.Day15.Part1.run sample2)
+    Assert.AreEqual(39514, Aoc.Year2018.Day15.Part1.run sample3)
+    Assert.AreEqual(27755, Aoc.Year2018.Day15.Part1.run sample4)
     Assert.AreEqual(28944, Aoc.Year2018.Day15.Part1.run sample5)
     Assert.AreEqual(18740, Aoc.Year2018.Day15.Part1.run sample6)
 
