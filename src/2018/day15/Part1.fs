@@ -94,16 +94,6 @@ let getOpponentGroup state pt =
 let readOrder pts =
     Seq.sortBy (fun (a: G.Point) -> (a.Y * 1000) + a.X) pts
 
-// let getToAct grid =
-//     grid
-//     |> findUnits
-//     |> Seq.map (fun item -> item.Key)
-//     |> readOrder
-//     |> Seq.map (fun pt ->
-//         match grid.TryGetValue pt with
-//         | true, v -> (pt, v)
-//         | _ -> failwith "SHOULD NOT HAPPEN")
-
 let getToAct (state: State) =
     [ Seq.map (fun (kv: KVP) -> kv.Key) state.Elves
       Seq.map (fun (kv: KVP) -> kv.Key) state.Goblins ]
@@ -177,7 +167,7 @@ let keepShortest (paths: seq<list<G.Point>>) =
 
         Seq.filter (fun p -> List.length p = shortest) paths
 
-type PathMap = System.Collections.Generic.Dictionary<G.Point, G.Point list list>
+type DistMap = System.Collections.Generic.Dictionary<G.Point, int>
 
 [<Struct>]
 type DfsState = { seen: Set<G.Point> }
@@ -185,7 +175,7 @@ type DfsState = { seen: Set<G.Point> }
 let newDfsState () = { seen = Set.empty }
 
 let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
-    let pathToEnd = PathMap()
+    let distToEnd = DistMap()
 
     let candidates dfsState pt =
         neighborPoints pt
@@ -193,48 +183,79 @@ let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
         |> List.filter (fun item -> isSpaceEmpty state item)
 
     let rec walk (pt: G.Point) (dfsState: DfsState) =
-        if pathToEnd.ContainsKey pt then
-            pathToEnd.[pt]
+        if distToEnd.ContainsKey pt then
+            distToEnd.[pt]
         else if pt = endPt then
-            pathToEnd.[endPt] <- [ [ endPt ] ]
-            [ [ endPt ] ]
+            0
         else
-            let paths =
+            let dists =
                 candidates dfsState pt
                 |> List.map (fun c -> walk c { dfsState with seen = dfsState.seen.Add pt })
-                |> List.concat
-                |> List.toSeq
-                |> keepShortest
-                |> Seq.map (fun path -> pt :: path)
 
-            if Seq.length paths > 0 then
-                pathToEnd.[pt] <- Seq.toList paths
+            if List.length dists > 0 then
+                let minDist = List.min dists
 
-            Seq.toList paths
+                let dist =
+                    if minDist < System.Int32.MaxValue then
+                        minDist + 1
+                    else
+                        minDist
 
-    newDfsState ()
-    |> walk startPt
-    |> List.map (fun p -> List.tail p)
+                distToEnd.[pt] <- dist
+                dist
+            else
+                System.Int32.MaxValue
+
+    newDfsState () |> walk startPt
+
+let getMovePoint (state: State) (pt: G.Point) =
+    let targets = getMoveTargets state pt
+
+    if Seq.isEmpty targets then
+        pt
+    else
+        let opts =
+            neighborPoints pt
+            |> List.filter (fun item -> isSpaceEmpty state item)
+
+        let dists =
+            System.Collections.Generic.Dictionary<int, Set<G.Point>>()
+
+        for o in opts do
+            for t in targets do
+                let dist = getPaths state o t
+
+                if not (dists.ContainsKey dist) then
+                    dists.[dist] <- Set.empty
+
+                dists.[dist] <- dists.[dist].Add(t)
+
+        if dists.Count > 0 then
+            let min = Seq.min dists.Keys
+
+            let target =
+                Seq.toList dists.[min] |> readOrder |> Seq.head
+
+            List.map (fun o -> (o, getPaths state o target)) opts
+            |> List.filter (fun (p, d) -> d = min)
+            |> List.map (fun (p, d) -> p)
+            |> readOrder
+            |> Seq.head
+        else
+            pt
 
 let doMove (state: State) (pt: G.Point) =
-    let newPts =
-        getMoveTargets state pt
-        |> Seq.map (fun t -> getPaths state pt t)
-        |> Seq.concat
-        |> keepShortest
-        |> Seq.map (fun p -> List.head p)
-        |> readOrder
+    let movePt = getMovePoint state pt
 
-    if not (Seq.isEmpty newPts) then
-        let newPt = Seq.head newPts
+    if movePt <> pt then
         let group = getUnitGroup state pt
         let piece = group.[pt]
 
         group.Remove pt |> ignore
-        group.[newPt] <- piece
+        group.[movePt] <- piece
 
-        match getToAttack state newPt with
-        | targets when Seq.length targets > 0 -> doAttack state targets
+        match getToAttack state movePt with
+        | ts when Seq.length ts > 0 -> doAttack state ts
         | _ -> ()
 
 let doAction state (pt: G.Point) =
@@ -263,7 +284,7 @@ let run (input: string) =
     let state = parse input
     let mutable roundNumber = 0
 
-    // printGrid state
+    printGrid state
     // round state |> ignore
     // printGrid state
 
@@ -272,8 +293,8 @@ let run (input: string) =
         if round state then
             roundNumber <- roundNumber + 1
 
-    printfn $"ROUND {roundNumber}"
-    printGrid state
+        printfn $"ROUND {roundNumber}"
+        printGrid state
 
     // printfn "GOBLINS"
     // for kv in state.Goblins do
