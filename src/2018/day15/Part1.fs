@@ -14,6 +14,7 @@ type KVP = System.Collections.Generic.KeyValuePair<G.Point, Piece>
 type PointSet = System.Collections.Generic.HashSet<G.Point>
 type PieceMap = System.Collections.Generic.Dictionary<G.Point, Piece>
 
+[<Struct>]
 type State =
     { Board: PointSet
       Goblins: PieceMap
@@ -178,38 +179,18 @@ let keepShortest (paths: seq<list<G.Point>>) =
 
 type PathMap = System.Collections.Generic.Dictionary<G.Point, G.Point list list>
 
-type DfsState =
-    { seen: Set<G.Point>
-      path: G.Point list }
+[<Struct>]
+type DfsState = { seen: Set<G.Point> }
 
-let newDfsState () = { seen = Set.empty; path = [] }
+let newDfsState () = { seen = Set.empty }
 
 let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
-    let mutable shortest = System.Int32.MaxValue
     let pathToEnd = PathMap()
 
     let candidates dfsState pt =
         neighborPoints pt
         |> List.filter (fun item -> not (dfsState.seen.Contains item))
         |> List.filter (fun item -> isSpaceEmpty state item)
-
-    // let rec walk (pt: G.Point) (dfsState: DfsState) =
-    //     if pt = endPt then
-    //         if List.length dfsState.path < shortest then
-    //             shortest <- List.length dfsState.path
-
-    //         [ List.rev dfsState.path ]
-    //     else if List.length dfsState.path > shortest then
-    //         []
-    //     else
-    //         candidates dfsState pt
-    //         |> List.map (fun k ->
-    //             walk
-    //                 k
-    //                 { dfsState with
-    //                     seen = dfsState.seen.Add pt
-    //                     path = k :: dfsState.path })
-    //         |> List.concat
 
     let rec walk (pt: G.Point) (dfsState: DfsState) =
         if pathToEnd.ContainsKey pt then
@@ -226,32 +207,16 @@ let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
                 |> keepShortest
                 |> Seq.map (fun path -> pt :: path)
 
-            pathToEnd.[pt] <- Seq.toList paths
+            if Seq.length paths > 0 then
+                pathToEnd.[pt] <- Seq.toList paths
+
             Seq.toList paths
 
     newDfsState ()
     |> walk startPt
     |> List.map (fun p -> List.tail p)
-// |> List.filter (fun path -> List.length path > 0)
 
 let doMove (state: State) (pt: G.Point) =
-    // printfn $"MOVE {pt.X},{pt.Y}"
-
-    // let tmp =
-    //     getMoveTargets state pt
-    //     |> Seq.map (fun t -> getPaths state pt t)
-
-    // printfn "TARGETS"
-
-    // for paths in tmp do
-    //     for path in paths do
-    //         printf "   "
-
-    //         for p in path do
-    //             printf $" {p.X},{p.Y}"
-
-    //         printfn ""
-
     let newPts =
         getMoveTargets state pt
         |> Seq.map (fun t -> getPaths state pt t)
@@ -259,12 +224,6 @@ let doMove (state: State) (pt: G.Point) =
         |> keepShortest
         |> Seq.map (fun p -> List.head p)
         |> readOrder
-
-    // for p in newPts do
-    //     printfn $"  {p.X},{p.Y} {isSpaceEmpty state p} {state.Elves.ContainsKey p}"
-    //     printfn "ELVES"
-    //     for kv in state.Elves do
-    //         printfn $" {kv.Key.X},{kv.Key.Y} {kv.Value}"
 
     if not (Seq.isEmpty newPts) then
         let newPt = Seq.head newPts
@@ -308,8 +267,8 @@ let run (input: string) =
     // round state |> ignore
     // printGrid state
 
-    // while not (combatEnds state) do
-    for _ in 1 .. 24 do
+    while not (combatEnds state) do
+        // for _ in 1 .. 24 do
         if round state then
             roundNumber <- roundNumber + 1
 
