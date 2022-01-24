@@ -219,26 +219,30 @@ let getMovePoint (state: State) (pt: G.Point) =
             |> List.filter (fun item -> isSpaceEmpty state item)
 
         let dists =
-            System.Collections.Generic.Dictionary<int, Set<G.Point>>()
+            System.Collections.Generic.Dictionary<int, Set<G.Point * G.Point>>()
 
         for o in opts do
             for t in targets do
                 let dist = getPaths state o t
 
-                if not (dists.ContainsKey dist) then
-                    dists.[dist] <- Set.empty
+                if dist < System.Int32.MaxValue then
+                    if not (dists.ContainsKey dist) then
+                        dists.[dist] <- Set.empty
 
-                dists.[dist] <- dists.[dist].Add(t)
+                    dists.[dist] <- dists.[dist].Add(o, t)
 
         if dists.Count > 0 then
             let min = Seq.min dists.Keys
 
             let target =
-                Seq.toList dists.[min] |> readOrder |> Seq.head
+                Seq.toList dists.[min]
+                |> List.map (fun (_, t) -> t)
+                |> readOrder
+                |> Seq.head
 
-            List.map (fun o -> (o, getPaths state o target)) opts
-            |> List.filter (fun (p, d) -> d = min)
-            |> List.map (fun (p, d) -> p)
+            dists.[min]
+            |> Seq.filter (fun (_, t) -> t = target)
+            |> Seq.map (fun (o, _) -> o)
             |> readOrder
             |> Seq.head
         else
@@ -289,10 +293,12 @@ let run (input: string) =
     // printGrid state
 
     while not (combatEnds state) do
-        // for _ in 1 .. 24 do
+        // for _ in 1 .. 1 do
         if round state then
             roundNumber <- roundNumber + 1
 
+        // if (roundNumber % 10) = 0 then
+        printfn ""
         printfn $"ROUND {roundNumber}"
         printGrid state
 
