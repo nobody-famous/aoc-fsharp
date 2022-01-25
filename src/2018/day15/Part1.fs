@@ -9,7 +9,6 @@ type Piece =
     | Goblin of int
     | Elf of int
 
-type Grid = System.Collections.Generic.Dictionary<G.Point, Piece>
 type KVP = System.Collections.Generic.KeyValuePair<G.Point, Piece>
 type PointSet = System.Collections.Generic.HashSet<G.Point>
 type PieceMap = System.Collections.Generic.Dictionary<G.Point, Piece>
@@ -204,10 +203,8 @@ let getMovePoint (state: State) (pt: G.Point) =
             neighborPoints pt
             |> List.filter (fun item -> isSpaceEmpty state item)
 
-        // let dists =
-        //     System.Collections.Generic.Dictionary<int, Set<G.Point * G.Point>>()
         let dists =
-            System.Collections.Generic.Dictionary<int, Set<G.Point * G.Point>>()
+            System.Collections.Generic.Dictionary<int, EndpointSet>()
 
         for o in opts do
             for t in targets do
@@ -215,9 +212,9 @@ let getMovePoint (state: State) (pt: G.Point) =
 
                 if dist < System.Int32.MaxValue then
                     if not (dists.ContainsKey dist) then
-                        dists.[dist] <- Set.empty
+                        dists.[dist] <- EndpointSet()
 
-                    dists.[dist] <- dists.[dist].Add(o, t)
+                    dists.[dist].Add(o, t) |> ignore
 
         if dists.Count > 0 then
             let min = Seq.min dists.Keys
@@ -276,27 +273,9 @@ let run (input: string) =
     let state = parse input
     let mutable roundNumber = 0
 
-    // printGrid state
-    // round state |> ignore
-    // printGrid state
-
     while not (combatEnds state) do
-        // for _ in 1 .. 1 do
         if round state then
             roundNumber <- roundNumber + 1
-
-    // if (roundNumber % 10) = 0 then
-    // printfn ""
-    // printfn $"ROUND {roundNumber}"
-    // printGrid state
-
-    // printfn "GOBLINS"
-    // for kv in state.Goblins do
-    //     printfn $" {kv.Key.X},{kv.Key.Y} {kv.Value}"
-
-    // printfn "ELVES"
-    // for kv in state.Elves do
-    //     printfn $" {kv.Key.X},{kv.Key.Y} {kv.Value}"
 
     let group =
         if Seq.length state.Goblins = 0 then
