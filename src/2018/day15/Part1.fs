@@ -206,7 +206,65 @@ let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
             else
                 System.Int32.MaxValue
 
-    newDfsState () |> walk startPt
+    let addToQueue (pq: DistMap) pt dist =
+        let (isFound, d) = pq.TryGetValue pt
+
+        if not isFound || dist < d then
+            pq.Add(pt, dist)
+
+    let dequeue (pq: DistMap) =
+        let (pt, dist) =
+            pq
+            |> Seq.fold
+                (fun (p1, d1) kv ->
+                    if d1 < kv.Value then
+                        (p1, d1)
+                    else
+                        (kv.Key, kv.Value))
+                ({ G.X = 0; G.Y = 0 }, System.Int32.MaxValue)
+
+        pq.Remove pt |> ignore
+        (pt, dist)
+
+    let djikstra (pt: G.Point) =
+        let pq = DistMap()
+        let seen = PointSet()
+        let mutable finalDist = System.Int32.MaxValue
+
+        addToQueue pq pt 0
+
+        while not (Seq.isEmpty pq) do
+            let (pt, dist) = dequeue pq
+
+            seen.Add pt |> ignore
+
+            let opts =
+                neighborPoints pt
+                |> List.filter (fun p -> not (seen.Contains p) && isSpaceEmpty state p)
+
+            if pt = endPt then
+                pq.Clear()
+                finalDist <- 0
+            else if List.contains endPt opts then
+                pq.Clear()
+                finalDist <- dist + 1
+            else
+                List.iter (fun p -> addToQueue pq p (dist + 1)) opts
+
+
+
+        // let opts =
+        //     neighborPoints pt
+        //     |> List.filter (fun item -> isSpaceEmpty state item)
+        //     |> List.iter (fun item -> addToQueue pq item (curDist + 1))
+
+        finalDist
+
+    // printfn $"PATHS {startPt.X},{startPt.Y} -> {endPt.X},{endPt.Y}"
+    let result = djikstra startPt
+    // printfn $"  <-- {result}"
+    result
+    // newDfsState () |> walk startPt
 
 let getMovePoint (state: State) (pt: G.Point) =
     let targets = getMoveTargets state pt
@@ -288,19 +346,19 @@ let run (input: string) =
     let state = parse input
     let mutable roundNumber = 0
 
-    printGrid state
+    // printGrid state
     // round state |> ignore
     // printGrid state
 
     while not (combatEnds state) do
-        // for _ in 1 .. 1 do
+    // for _ in 1 .. 1 do
         if round state then
             roundNumber <- roundNumber + 1
 
         // if (roundNumber % 10) = 0 then
-        printfn ""
-        printfn $"ROUND {roundNumber}"
-        printGrid state
+        // printfn ""
+        // printfn $"ROUND {roundNumber}"
+        // printGrid state
 
     // printfn "GOBLINS"
     // for kv in state.Goblins do
