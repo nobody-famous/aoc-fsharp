@@ -151,6 +151,7 @@ let getMoveTargets (state: State) (pt: G.Point) =
     |> Seq.filter (fun pt -> isSpaceEmpty state pt)
 
 type DistMap = System.Collections.Generic.Dictionary<G.Point, int>
+type Queue = System.Collections.Generic.PriorityQueue<G.Point, int>
 
 let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
     let addToQueue (pq: DistMap) pt dist =
@@ -159,44 +160,41 @@ let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
         if not isFound || dist < d then
             pq.Add(pt, dist)
 
-    let dequeue (pq: DistMap) =
-        let (pt, dist) =
-            pq
-            |> Seq.fold
-                (fun (p1, d1) kv ->
-                    if d1 < kv.Value then
-                        (p1, d1)
-                    else
-                        (kv.Key, kv.Value))
-                ({ G.X = 0; G.Y = 0 }, System.Int32.MaxValue)
+    let dequeue (pq: Queue) =
+        let mutable pt: G.Point = { X = 0; Y = 0 }
+        let mutable dist = 0
 
-        pq.Remove pt |> ignore
-        (pt, dist)
+        match pq.TryDequeue(&pt, &dist) with
+        | true -> (pt, dist)
+        | false -> failwith "Failed to dequeue next point"
 
     let djikstra (pt: G.Point) =
-        let pq = DistMap()
+        let pq = Queue()
         let seen = PointSet()
         let mutable finalDist = System.Int32.MaxValue
 
-        addToQueue pq pt 0
+        pq.Enqueue(pt, 0)
 
-        while not (Seq.isEmpty pq) do
+        while pq.Count > 0 do
             let (pt, dist) = dequeue pq
 
-            seen.Add pt |> ignore
+            if not (seen.Contains pt) then
+                match seen.Add pt with
+                | true -> ()
+                | false -> failwith "Failed to add to seen"
 
-            let opts =
-                neighborPoints pt
-                |> List.filter (fun p -> not (seen.Contains p) && isSpaceEmpty state p)
+                let opts =
+                    neighborPoints pt
+                    |> List.filter (fun p -> not (seen.Contains p) && isSpaceEmpty state p)
 
-            if pt = endPt then
-                pq.Clear()
-                finalDist <- 0
-            else if List.contains endPt opts then
-                pq.Clear()
-                finalDist <- dist + 1
-            else
-                List.iter (fun p -> addToQueue pq p (dist + 1)) opts
+                if pt = endPt then
+                    pq.Clear()
+                    finalDist <- 0
+                else if List.contains endPt opts then
+                    pq.Clear()
+                    finalDist <- dist + 1
+                else
+                    List.iter (fun p -> pq.Enqueue(p, (dist + 1))) opts
 
         finalDist
 
@@ -229,8 +227,8 @@ let getMovePoint (state: State) (pt: G.Point) =
             let min = Seq.min dists.Keys
 
             let target =
-                Seq.toList dists.[min]
-                |> List.map (fun (_, t) -> t)
+                dists.[min]
+                |> Seq.map (fun (_, t) -> t)
                 |> readOrder
                 |> Seq.head
 
@@ -287,14 +285,14 @@ let run (input: string) =
     // printGrid state
 
     while not (combatEnds state) do
-    // for _ in 1 .. 1 do
+        // for _ in 1 .. 1 do
         if round state then
             roundNumber <- roundNumber + 1
 
-        // if (roundNumber % 10) = 0 then
-        // printfn ""
-        // printfn $"ROUND {roundNumber}"
-        // printGrid state
+    // if (roundNumber % 10) = 0 then
+    // printfn ""
+    // printfn $"ROUND {roundNumber}"
+    // printGrid state
 
     // printfn "GOBLINS"
     // for kv in state.Goblins do
