@@ -107,22 +107,22 @@ let getToAttack (state: State) (pt: G.Point) =
 let doAttack (state: State) (targets: G.Point seq) =
     let group = getUnitGroup state (Seq.head targets)
 
-    let least =
-        targets
-        |> Seq.map (fun t ->
-            match group.TryGetValue t with
-            | true, Goblin hp
-            | true, Elf hp -> hp
-            | _ -> failwith "doAttack SHOULD NOT BE HERE")
-        |> Seq.min
-
     let opponent =
         targets
-        |> Seq.filter (fun t ->
-            match group.TryGetValue t with
-            | true, Goblin hp
-            | true, Elf hp -> hp = least
-            | _ -> failwith "doAttack SHOULD NOT BE HERE")
+        |> Seq.fold
+            (fun (least, curPts) pt ->
+                match group.[pt] with
+                | Goblin hp
+                | Elf hp ->
+                    if hp < least then
+                        (hp, [ pt ])
+                    else if hp = least then
+                        (hp, pt :: curPts)
+                    else
+                        (least, curPts)
+                | _ -> (least, curPts))
+            (System.Int32.MaxValue, [])
+        |> snd
         |> readOrder
         |> Seq.head
 
@@ -150,16 +150,9 @@ let getMoveTargets (state: State) (pt: G.Point) =
     |> Seq.concat
     |> Seq.filter (fun pt -> isSpaceEmpty state pt)
 
-type DistMap = System.Collections.Generic.Dictionary<G.Point, int>
 type Queue = System.Collections.Generic.PriorityQueue<G.Point, int>
 
-let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
-    let addToQueue (pq: DistMap) pt dist =
-        let (isFound, d) = pq.TryGetValue pt
-
-        if not isFound || dist < d then
-            pq.Add(pt, dist)
-
+let getDistance (state: State) (startPt: G.Point) (endPt: G.Point) =
     let dequeue (pq: Queue) =
         let mutable pt: G.Point = { X = 0; Y = 0 }
         let mutable dist = 0
@@ -179,9 +172,8 @@ let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
             let (pt, dist) = dequeue pq
 
             if not (seen.Contains pt) then
-                match seen.Add pt with
-                | true -> ()
-                | false -> failwith "Failed to add to seen"
+                if not (seen.Add pt) then
+                    failwith "Failed to add to seen"
 
                 let opts =
                     neighborPoints pt
@@ -194,11 +186,13 @@ let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
                     pq.Clear()
                     finalDist <- dist + 1
                 else
-                    List.iter (fun p -> pq.Enqueue(p, (dist + 1))) opts
+                    List.iter (fun p -> pq.Enqueue(p, dist + 1)) opts
 
         finalDist
 
     djikstra startPt
+
+type EndpointSet = System.Collections.Generic.HashSet<G.Point * G.Point>
 
 let getMovePoint (state: State) (pt: G.Point) =
     let targets = getMoveTargets state pt
@@ -210,12 +204,14 @@ let getMovePoint (state: State) (pt: G.Point) =
             neighborPoints pt
             |> List.filter (fun item -> isSpaceEmpty state item)
 
+        // let dists =
+        //     System.Collections.Generic.Dictionary<int, Set<G.Point * G.Point>>()
         let dists =
             System.Collections.Generic.Dictionary<int, Set<G.Point * G.Point>>()
 
         for o in opts do
             for t in targets do
-                let dist = getPaths state o t
+                let dist = getDistance state o t
 
                 if dist < System.Int32.MaxValue then
                     if not (dists.ContainsKey dist) then
