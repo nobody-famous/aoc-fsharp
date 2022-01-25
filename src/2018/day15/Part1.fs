@@ -71,14 +71,6 @@ let printGrid (state: State) =
 
         printfn ""
 
-let findUnits (grid: Grid) =
-    grid
-    |> Seq.filter (fun kv ->
-        match kv.Value with
-        | Goblin _
-        | Elf _ -> true
-        | _ -> false)
-
 let getUnitGroup state pt =
     if state.Goblins.ContainsKey pt then
         state.Goblins
@@ -158,54 +150,9 @@ let getMoveTargets (state: State) (pt: G.Point) =
     |> Seq.concat
     |> Seq.filter (fun pt -> isSpaceEmpty state pt)
 
-let keepShortest (paths: seq<list<G.Point>>) =
-    if Seq.isEmpty paths then
-        paths
-    else
-        let shortest =
-            Seq.map (fun p -> List.length p) paths |> Seq.min
-
-        Seq.filter (fun p -> List.length p = shortest) paths
-
 type DistMap = System.Collections.Generic.Dictionary<G.Point, int>
 
-[<Struct>]
-type DfsState = { seen: Set<G.Point> }
-
-let newDfsState () = { seen = Set.empty }
-
 let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
-    let distToEnd = DistMap()
-
-    let candidates dfsState pt =
-        neighborPoints pt
-        |> List.filter (fun item -> not (dfsState.seen.Contains item))
-        |> List.filter (fun item -> isSpaceEmpty state item)
-
-    let rec walk (pt: G.Point) (dfsState: DfsState) =
-        if distToEnd.ContainsKey pt then
-            distToEnd.[pt]
-        else if pt = endPt then
-            0
-        else
-            let dists =
-                candidates dfsState pt
-                |> List.map (fun c -> walk c { dfsState with seen = dfsState.seen.Add pt })
-
-            if List.length dists > 0 then
-                let minDist = List.min dists
-
-                let dist =
-                    if minDist < System.Int32.MaxValue then
-                        minDist + 1
-                    else
-                        minDist
-
-                distToEnd.[pt] <- dist
-                dist
-            else
-                System.Int32.MaxValue
-
     let addToQueue (pq: DistMap) pt dist =
         let (isFound, d) = pq.TryGetValue pt
 
@@ -251,20 +198,9 @@ let getPaths (state: State) (startPt: G.Point) (endPt: G.Point) =
             else
                 List.iter (fun p -> addToQueue pq p (dist + 1)) opts
 
-
-
-        // let opts =
-        //     neighborPoints pt
-        //     |> List.filter (fun item -> isSpaceEmpty state item)
-        //     |> List.iter (fun item -> addToQueue pq item (curDist + 1))
-
         finalDist
 
-    // printfn $"PATHS {startPt.X},{startPt.Y} -> {endPt.X},{endPt.Y}"
-    let result = djikstra startPt
-    // printfn $"  <-- {result}"
-    result
-    // newDfsState () |> walk startPt
+    djikstra startPt
 
 let getMovePoint (state: State) (pt: G.Point) =
     let targets = getMoveTargets state pt
