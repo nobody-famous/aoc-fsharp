@@ -15,3 +15,6 @@ let findBounds (pts: Point list) : Point * Point =
          { X = System.Int32.MinValue
            Y = System.Int32.MinValue })
         pts
+
+let manDist pt1 pt2 =
+    abs (pt1.X - pt2.X) + abs (pt1.Y - pt2.Y)
