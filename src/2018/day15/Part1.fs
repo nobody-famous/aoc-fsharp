@@ -151,7 +151,7 @@ let getMoveTargets (state: State) (pt: G.Point) =
 
 type Queue = System.Collections.Generic.PriorityQueue<G.Point, int>
 
-let getDistance (state: State) (startPt: G.Point) (endPt: G.Point) =
+let getDistance (state: State) cap (startPt: G.Point) (endPt: G.Point) =
     let dequeue (pq: Queue) =
         let mutable pt: G.Point = { X = 0; Y = 0 }
         let mutable dist = 0
@@ -170,7 +170,7 @@ let getDistance (state: State) (startPt: G.Point) (endPt: G.Point) =
         while pq.Count > 0 do
             let (pt, dist) = dequeue pq
 
-            if not (seen.Contains pt) then
+            if dist < cap && not (seen.Contains pt) then
                 if not (seen.Add pt) then
                     failwith "Failed to add to seen"
 
@@ -206,9 +206,13 @@ let getMovePoint (state: State) (pt: G.Point) =
         let dists =
             System.Collections.Generic.Dictionary<int, EndpointSet>()
 
+        let mutable cap = System.Int32.MaxValue
+
         for o in opts do
             for t in targets do
-                let dist = getDistance state o t
+                let dist = getDistance state cap o t
+
+                if dist < cap then cap <- dist
 
                 if dist < System.Int32.MaxValue then
                     if not (dists.ContainsKey dist) then
@@ -276,6 +280,10 @@ let run (input: string) =
     while not (combatEnds state) do
         if round state then
             roundNumber <- roundNumber + 1
+        
+        // printfn ""
+        // printfn $"ROUND {roundNumber}"
+        // printGrid state
 
     let group =
         if Seq.length state.Goblins = 0 then
