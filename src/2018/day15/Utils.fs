@@ -164,7 +164,7 @@ let getMoveTargets (state: State) (pt: G.Point) =
 
 type Queue = System.Collections.Generic.PriorityQueue<G.Point, int>
 
-let getDistance (state: State) cap (startPt: G.Point) (endPt: G.Point) =
+let getDistance (state: State) (startPt: G.Point) (endPt: G.Point) =
     let dequeue (pq: Queue) =
         let mutable pt: G.Point = { X = 0; Y = 0 }
         let mutable dist = 0
@@ -183,7 +183,7 @@ let getDistance (state: State) cap (startPt: G.Point) (endPt: G.Point) =
         while pq.Count > 0 do
             let (pt, dist) = dequeue pq
 
-            if dist < cap && not (seen.Contains pt) then
+            if not (seen.Contains pt) then
                 if not (seen.Add pt) then
                     failwith "Failed to add to seen"
 
@@ -212,37 +212,29 @@ let getMovePoint (state: State) (pt: G.Point) =
     if Seq.isEmpty targets then
         pt
     else
-        let opts =
-            neighborPoints pt
-            |> List.filter (fun item -> isSpaceEmpty state item)
-
         let dists =
             System.Collections.Generic.Dictionary<int, EndpointSet>()
 
-        let seen =
-            System.Collections.Generic.Dictionary<G.Point * G.Point, int>()
+        let getDistToTarget state src dst =
+            async { return (src, dst, getDistance state src dst) }
 
-        let mutable cap = System.Int32.MaxValue
+        neighborPoints pt
+        |> List.filter (fun item -> isSpaceEmpty state item)
+        |> List.iter (fun start ->
+            targets
+            |> Seq.map (fun t -> getDistToTarget state start t)
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> Array.iter (fun (src, dst, distance) ->
+                if distance < System.Int32.MaxValue then
+                    if not (dists.ContainsKey distance) then
+                        dists.[distance] <- EndpointSet()
 
-        for o in opts do
-            for t in targets |> Seq.sortBy (fun p -> G.manDist p o) do
-                let dist =
-                    match seen.TryGetValue((o, t)) with
-                    | true, d -> d
-                    | _ -> getDistance state cap o t
+                    dists.[distance].Add(src, dst) |> ignore))
 
-                if dist < cap then cap <- dist
-
-                if dist < System.Int32.MaxValue then
-                    if not (dists.ContainsKey dist) then
-                        dists.[dist] <- EndpointSet()
-
-                    seen.[(o, t)] <- dist
-                    seen.[(t, o)] <- dist
-
-                    dists.[dist].Add(o, t) |> ignore
-
-        if dists.Count > 0 then
+        if dists.Count = 0 then
+            pt
+        else
             let min = Seq.min dists.Keys
 
             let target =
@@ -252,10 +244,8 @@ let getMovePoint (state: State) (pt: G.Point) =
 
             dists.[min]
             |> Seq.filter (fun (_, t) -> t = target)
-            |> Seq.minBy (fun (o, _) -> hashPoint o)
+            |> Seq.minBy (fun (start, _) -> hashPoint start)
             |> fst
-        else
-            pt
 
 let doMove (state: State) (pt: G.Point) =
     let movePt = getMovePoint state pt
