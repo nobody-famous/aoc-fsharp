@@ -25,5 +25,6 @@ let trimIndent (input: string array) : string array =
 
     let cutEnds (input: string array) startNdx endNdx : string array =
         Array.sub input startNdx (endNdx - startNdx + 1)
+        |> Array.map (fun str -> str.TrimEnd())
 
     input |> findEnds ||> cutEnds input |> stripIndent

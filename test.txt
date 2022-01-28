@@ -1,0 +1,356 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  utils -> /home/rich/work/fsharp/aoc-fsharp/src/utils/bin/release/net6.0/utils.dll
+  day15 -> /home/rich/work/fsharp/aoc-fsharp/src/2018/day15/bin/release/net6.0/day15.dll
+  Day15Test -> /home/rich/work/fsharp/aoc-fsharp/test/2018/Day15/bin/release/net6.0/Day15Test.dll
+Test run for /home/rich/work/fsharp/aoc-fsharp/test/2018/Day15/bin/release/net6.0/Day15Test.dll (.NETCoreApp,Version=v6.0)
+Microsoft (R) Test Execution Command Line Tool Version 17.0.0
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+  Failed Part1 [177 ms]
+  Error Message:
+     Expected: 28940
+  But was:  28944
+
+  Stack Trace:
+     at Day15.Part1() in /home/rich/work/fsharp/aoc-fsharp/test/2018/Day15/UnitTest.fs:line 79
+
+  Standard Output Messages:
+ ROUND 1
+ ..E.G
+ .#...
+ .###G
+ .#.#.
+ E.G#G
+ ROUND 2
+ ...EG
+ .#..G
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 3
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 4
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 5
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 6
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 7
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 8
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 9
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 10
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 11
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 12
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 13
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 14
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 15
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 16
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 17
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 18
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 19
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 20
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 21
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 22
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 23
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 24
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 25
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 26
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 27
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 28
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 29
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 30
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 31
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 32
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 33
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 34
+ ...EG
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ REMOVE ELF 4,1
+ ROUND 35
+ ....G
+ .#.G.
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 36
+ ...G.
+ .#G..
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 37
+ ..G..
+ .#G..
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 38
+ .G...
+ .#G..
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 39
+ G....
+ .#G..
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 40
+ .....
+ G#G..
+ .###.
+ .#.#.
+ .EG#G
+ ROUND 41
+ .....
+ .#G..
+ G###.
+ .#.#.
+ .EG#G
+ ROUND 42
+ .....
+ .#G..
+ .###.
+ G#.#.
+ .EG#G
+ ROUND 43
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 44
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 45
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 46
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 47
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 48
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 49
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 50
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 51
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 52
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 53
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ ROUND 54
+ .....
+ .#G..
+ .###.
+ .#.#.
+ GEG#G
+ REMOVE ELF 2,5
+ ROUND 54
+ .....
+ .#G..
+ .###.
+ .#.#.
+ G.G#G
+
+
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 177 ms - /home/rich/work/fsharp/aoc-fsharp/test/2018/Day15/bin/release/net6.0/Day15Test.dll (net6.0)
