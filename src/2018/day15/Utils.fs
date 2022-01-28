@@ -206,7 +206,63 @@ let getDistance (state: State) (startPt: G.Point) (endPt: G.Point) =
 
 type EndpointSet = System.Collections.Generic.HashSet<G.Point * G.Point>
 
+let getTargetDistances (state: State) (startPt: G.Point) (targets: G.Point seq) =
+    let distances =
+        System.Collections.Generic.Dictionary<G.Point, int>()
+
+    let seen = PointSet()
+
+    let rec walk (toVisit: G.Point list) (rem: PointSet) dist =
+        printfn $"WALK {List.length toVisit}"
+        toVisit
+        |> List.iter (fun p ->
+            if rem.Contains p then
+                distances.[p] <- dist
+                rem.Remove(p) |> ignore
+
+            seen.Add p |> ignore)
+
+        if not (List.isEmpty toVisit) && rem.Count > 0 then
+            let next =
+                toVisit
+                |> List.map (fun p ->
+                    neighborPoints p
+                    |> List.filter (fun p -> not (seen.Contains p) && isSpaceEmpty state p))
+                |> List.concat
+
+            walk next rem (dist + 1)
+
+    walk [ startPt ] (PointSet(targets)) 0
+    distances |> Seq.map (fun kv -> kv.Key, kv.Value)
+
 let getMovePoint (state: State) (pt: G.Point) =
+    printfn "getMovePoint"
+    let targets =
+        getMoveTargets state pt
+        |> getTargetDistances state pt
+
+    printfn "getMovePoint GOT TARGETS"
+
+    // if Seq.isEmpty targets then
+    //     pt
+    // else
+    //     let target =
+    //         targets
+    //         |> Seq.groupBy (fun (_, d) -> d)
+    //         |> Seq.minBy (fun (d, _) -> d)
+    //         |> snd
+    //         |> Seq.map (fun (p, _) -> p)
+    //         |> Seq.minBy hashPoint
+
+    //     neighborPoints pt
+    //     |> List.filter (fun p -> isSpaceEmpty state p)
+    //     |> List.map (fun p -> (p, getDistance state p target))
+    //     |> List.groupBy (fun (_, d) -> d)
+    //     |> List.minBy (fun (d, _) -> d)
+    //     |> snd
+    //     |> List.map (fun (p, _) -> p)
+    //     |> List.minBy hashPoint
+
     let targets = getMoveTargets state pt
 
     if Seq.isEmpty targets then
