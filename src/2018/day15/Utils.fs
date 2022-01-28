@@ -212,96 +212,56 @@ let getTargetDistances (state: State) (startPt: G.Point) (targets: G.Point seq) 
 
     let seen = PointSet()
 
-    let rec walk (toVisit: G.Point list) (rem: PointSet) dist =
-        printfn $"WALK {List.length toVisit}"
+    let rec walk (toVisit: PointSet) (rem: PointSet) dist =
         toVisit
-        |> List.iter (fun p ->
+        |> Seq.iter (fun p ->
             if rem.Contains p then
                 distances.[p] <- dist
                 rem.Remove(p) |> ignore
 
             seen.Add p |> ignore)
 
-        if not (List.isEmpty toVisit) && rem.Count > 0 then
-            let next =
-                toVisit
-                |> List.map (fun p ->
-                    neighborPoints p
-                    |> List.filter (fun p -> not (seen.Contains p) && isSpaceEmpty state p))
-                |> List.concat
+        if not (Seq.isEmpty toVisit) && rem.Count > 0 then
+            let next = PointSet()
+
+            toVisit
+            |> Seq.iter (fun p ->
+                neighborPoints p
+                |> List.filter (fun p -> not (seen.Contains p) && isSpaceEmpty state p)
+                |> List.iter (fun p -> next.Add p |> ignore))
 
             walk next rem (dist + 1)
 
-    walk [ startPt ] (PointSet(targets)) 0
+    let pts = PointSet()
+    pts.Add(startPt) |> ignore
+
+    walk pts (PointSet(targets)) 0
     distances |> Seq.map (fun kv -> kv.Key, kv.Value)
 
 let getMovePoint (state: State) (pt: G.Point) =
-    printfn "getMovePoint"
     let targets =
         getMoveTargets state pt
         |> getTargetDistances state pt
 
-    printfn "getMovePoint GOT TARGETS"
-
-    // if Seq.isEmpty targets then
-    //     pt
-    // else
-    //     let target =
-    //         targets
-    //         |> Seq.groupBy (fun (_, d) -> d)
-    //         |> Seq.minBy (fun (d, _) -> d)
-    //         |> snd
-    //         |> Seq.map (fun (p, _) -> p)
-    //         |> Seq.minBy hashPoint
-
-    //     neighborPoints pt
-    //     |> List.filter (fun p -> isSpaceEmpty state p)
-    //     |> List.map (fun p -> (p, getDistance state p target))
-    //     |> List.groupBy (fun (_, d) -> d)
-    //     |> List.minBy (fun (d, _) -> d)
-    //     |> snd
-    //     |> List.map (fun (p, _) -> p)
-    //     |> List.minBy hashPoint
-
-    let targets = getMoveTargets state pt
-
     if Seq.isEmpty targets then
         pt
     else
-        let dists =
-            System.Collections.Generic.Dictionary<int, EndpointSet>()
-
-        let getDistToTarget state src dst =
-            async { return (src, dst, getDistance state src dst) }
+        let target =
+            targets
+            |> Seq.groupBy (fun (_, d) -> d)
+            |> Seq.minBy (fun (d, _) -> d)
+            |> snd
+            |> Seq.map (fun (p, _) -> p)
+            |> Seq.minBy hashPoint
 
         neighborPoints pt
-        |> List.filter (fun item -> isSpaceEmpty state item)
-        |> List.iter (fun start ->
-            targets
-            |> Seq.map (fun t -> getDistToTarget state start t)
-            |> Async.Parallel
-            |> Async.RunSynchronously
-            |> Array.iter (fun (src, dst, distance) ->
-                if distance < System.Int32.MaxValue then
-                    if not (dists.ContainsKey distance) then
-                        dists.[distance] <- EndpointSet()
-
-                    dists.[distance].Add(src, dst) |> ignore))
-
-        if dists.Count = 0 then
-            pt
-        else
-            let min = Seq.min dists.Keys
-
-            let target =
-                dists.[min]
-                |> Seq.minBy (fun (_, t) -> hashPoint t)
-                |> snd
-
-            dists.[min]
-            |> Seq.filter (fun (_, t) -> t = target)
-            |> Seq.minBy (fun (start, _) -> hashPoint start)
-            |> fst
+        |> List.filter (fun p -> isSpaceEmpty state p)
+        |> List.map (fun p -> (p, getDistance state p target))
+        |> List.groupBy (fun (_, d) -> d)
+        |> List.minBy (fun (d, _) -> d)
+        |> snd
+        |> List.map (fun (p, _) -> p)
+        |> List.minBy hashPoint
 
 let doMove (state: State) (pt: G.Point) =
     let movePt = getMovePoint state pt
