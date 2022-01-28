@@ -6,14 +6,8 @@ let run (input: string) =
     let state = U.parse input
     let mutable roundNumber = 0
 
-    U.printGrid state
-
     while not (U.combatEnds state) do
         if U.round state then
             roundNumber <- roundNumber + 1
-
-    // printfn ""
-    // printfn $"ROUND {roundNumber}"
-    // printGrid state
 
     U.computeAnswer roundNumber state

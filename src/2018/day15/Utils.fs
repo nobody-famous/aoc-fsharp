@@ -19,7 +19,8 @@ let HitPoints = 200
 type State =
     { Board: PointSet
       Goblins: PieceMap
-      Elves: PieceMap }
+      Elves: PieceMap
+      ElfDamage: int }
 
 let computeAnswer roundNumber (state: State) =
     let group =
@@ -41,7 +42,8 @@ let parseLines (lines: string array) =
     let state =
         { Board = PointSet()
           Goblins = PieceMap()
-          Elves = PieceMap() }
+          Elves = PieceMap()
+          ElfDamage = 3 }
 
     let parseRow y (line: string) =
         Seq.iteri
@@ -66,6 +68,12 @@ let parseLines (lines: string array) =
 
 let parse (input: string) =
     input.Split '\n' |> S.trimIndent |> parseLines
+
+let copyState (state: State) =
+    { Board = PointSet(state.Board)
+      Goblins = PieceMap(state.Goblins)
+      Elves = PieceMap(state.Elves)
+      ElfDamage = state.ElfDamage }
 
 let printGrid (state: State) =
     let (minPt, maxPt) =
@@ -140,10 +148,10 @@ let doAttack (state: State) (targets: G.Point seq) =
 
     match group.[opponent] with
     | Goblin hp ->
-        if hp <= 3 then
+        if hp <= state.ElfDamage then
             group.Remove opponent |> ignore
         else
-            group.[opponent] <- Goblin(hp - 3)
+            group.[opponent] <- Goblin(hp - state.ElfDamage)
     | Elf hp ->
         if hp <= 3 then
             group.Remove opponent |> ignore
