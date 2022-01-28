@@ -3,23 +3,27 @@ module Aoc.Year2018.Day15.Utils
 module G = Aoc.Utils.Geometry
 module S = Aoc.Utils.String
 
-type Piece =
-    | Empty
-    | Wall
+type NPC =
     | Goblin of int
     | Elf of int
 
-type KVP = System.Collections.Generic.KeyValuePair<G.Point, Piece>
+type Piece =
+    | Empty
+    | Wall
+    | NPC
+
+type KVP = System.Collections.Generic.KeyValuePair<G.Point, NPC>
 type PointSet = System.Collections.Generic.HashSet<G.Point>
-type PieceMap = System.Collections.Generic.Dictionary<G.Point, Piece>
+type NpcMap = System.Collections.Generic.Dictionary<G.Point, NPC>
+type EndpointSet = System.Collections.Generic.HashSet<G.Point * G.Point>
 
 let HitPoints = 200
 
 [<Struct>]
 type State =
     { Board: PointSet
-      Goblins: PieceMap
-      Elves: PieceMap
+      Goblins: NpcMap
+      Elves: NpcMap
       ElfDamage: int }
 
 let computeAnswer roundNumber (state: State) =
@@ -34,15 +38,14 @@ let computeAnswer roundNumber (state: State) =
         (fun (kv: KVP) ->
             match kv.Value with
             | Goblin hp -> hp
-            | Elf hp -> hp
-            | _ -> 0)
+            | Elf hp -> hp)
         group
 
 let parseLines (lines: string array) =
     let state =
         { Board = PointSet()
-          Goblins = PieceMap()
-          Elves = PieceMap()
+          Goblins = NpcMap()
+          Elves = NpcMap()
           ElfDamage = 3 }
 
     let parseRow y (line: string) =
@@ -71,8 +74,8 @@ let parse (input: string) =
 
 let copyState (state: State) =
     { Board = PointSet(state.Board)
-      Goblins = PieceMap(state.Goblins)
-      Elves = PieceMap(state.Elves)
+      Goblins = NpcMap(state.Goblins)
+      Elves = NpcMap(state.Elves)
       ElfDamage = state.ElfDamage }
 
 let printGrid (state: State) =
@@ -130,34 +133,26 @@ let doAttack (state: State) (targets: G.Point seq) =
 
     let opponent =
         targets
-        |> Seq.fold
-            (fun (least, curPts) pt ->
-                match group.[pt] with
-                | Goblin hp
-                | Elf hp ->
-                    if hp < least then
-                        (hp, [ pt ])
-                    else if hp = least then
-                        (hp, pt :: curPts)
-                    else
-                        (least, curPts)
-                | _ -> (least, curPts))
-            (System.Int32.MaxValue, [])
+        |> Seq.map (fun p ->
+            (p,
+             match group.[p] with
+             | Goblin hp
+             | Elf hp -> hp))
+        |> Seq.groupBy (fun (_, hp) -> hp)
+        |> Seq.minBy (fun (hp, _) -> hp)
         |> snd
+        |> Seq.map (fun (p, _) -> p)
         |> Seq.minBy hashPoint
 
     match group.[opponent] with
-    | Goblin hp ->
-        if hp <= state.ElfDamage then
-            group.Remove opponent |> ignore
-        else
-            group.[opponent] <- Goblin(hp - state.ElfDamage)
+    | Goblin hp -> group.[opponent] <- Goblin(hp - state.ElfDamage)
+    | Elf hp -> group.[opponent] <- Elf(hp - 3)
+
+    match group.[opponent] with
+    | Goblin hp
     | Elf hp ->
-        if hp <= 3 then
+        if hp <= 0 then
             group.Remove opponent |> ignore
-        else
-            group.[opponent] <- Elf(hp - 3)
-    | _ -> failwith "doAttack SHOULD NOT BE HERE"
 
 let isSpaceEmpty (state: State) (pt: G.Point) =
     state.Board.Contains pt
@@ -166,9 +161,10 @@ let isSpaceEmpty (state: State) (pt: G.Point) =
 
 let getMoveTargets (state: State) (pt: G.Point) =
     getOpponentGroup state pt
-    |> Seq.map (fun (kv: KVP) -> neighborPoints kv.Key)
+    |> Seq.map (fun (kv: KVP) ->
+        neighborPoints kv.Key
+        |> Seq.filter (isSpaceEmpty state))
     |> Seq.concat
-    |> Seq.filter (fun pt -> isSpaceEmpty state pt)
 
 type Queue = System.Collections.Generic.PriorityQueue<G.Point, int>
 
@@ -211,8 +207,6 @@ let getDistance (state: State) (startPt: G.Point) (endPt: G.Point) =
         finalDist
 
     djikstra startPt
-
-type EndpointSet = System.Collections.Generic.HashSet<G.Point * G.Point>
 
 let getTargetDistances (state: State) (startPt: G.Point) (targets: G.Point seq) =
     let distances =
@@ -281,9 +275,10 @@ let doMove (state: State) (pt: G.Point) =
         group.Remove pt |> ignore
         group.[movePt] <- piece
 
-        match getToAttack state movePt with
-        | ts when Seq.length ts > 0 -> doAttack state ts
-        | _ -> ()
+        let ts = getToAttack state movePt
+
+        if Seq.length ts > 0 then
+            doAttack state ts
 
 let doAction state (pt: G.Point) =
     match getToAttack state pt with
