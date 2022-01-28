@@ -281,13 +281,18 @@ let doMove (state: State) (pt: G.Point) =
             doAttack state ts
 
 let doAction state (pt: G.Point) =
-    match getToAttack state pt with
-    | targets when Seq.length targets > 0 -> doAttack state targets
-    | _ -> doMove state pt
+    let targets = getToAttack state pt
+
+    if Seq.length targets > 0 then
+        doAttack state targets
+    else
+        doMove state pt
 
 let combatEnds (state: State) =
-    Seq.length state.Elves = 0
-    || Seq.length state.Goblins = 0
+    let numElves = Seq.length state.Elves
+    let numGoblins = Seq.length state.Goblins
+
+    numElves = 0 || numGoblins = 0
 
 let round state =
     let toAct = getToAct state
