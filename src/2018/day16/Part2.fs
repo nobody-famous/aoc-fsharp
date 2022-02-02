@@ -8,8 +8,6 @@ let getMatches (sample: U.Sample) (fns: seq<(U.State -> U.RawInstr -> U.State)>)
     |> Seq.fold
         (fun acc (ndx, fn) ->
             if fn sample.Before sample.Instr = sample.After then
-                // if ndx = 2 then
-                //     printfn $"MATCHED {ndx} {sample.Instr} {U.stateToString sample.Before} -> {U.stateToString sample.After}"
                 ndx :: acc
             else
                 acc)
@@ -22,36 +20,41 @@ let findOpCodes (samples: U.Sample list) =
     let mutable fnMap = Map.empty
 
     while not (Seq.isEmpty fns) do
-        let mutable samplesToRemove = []
+        let matches =
+            ss
+            |> Seq.map (fun s ->
+                let (op, _, _, _) = s.Instr
+                (op, getMatches s fns))
+            |> Seq.filter (fun (_, fnList) -> List.length fnList = 1)
+            |> Seq.groupBy (fun (op, _) -> op)
+            |> Seq.map (fun (op, fnList) -> (op, fnList |> Seq.map (fun (_, f) -> f)))
+            |> Seq.map (fun (op, fnList) -> (op, Set.ofList (List.concat fnList)))
 
-        for sample in ss do
-            let (opCode, _, _, _) = sample.Instr
+        matches
+        |> Seq.iter (fun (op, ndxSet) ->
+            if Set.count ndxSet <> 1 then
+                raise (System.Exception "Too many indices")
 
-            let fnsToRemove =
-                System.Collections.Generic.HashSet<int>()
+            ndxSet
+            |> Seq.iter (fun ndx -> fnMap <- fnMap |> Map.add op (Seq.item ndx fns))
 
-            for fn in fns do
-                let matches = getMatches sample fns
+            ss <-
+                ss
+                |> Set.filter (fun s ->
+                    let (op', _, _, _) = s.Instr
+                    op <> op'))
 
-                if List.length matches = 1 then
-                    fnMap <- Map.add opCode fn fnMap
-                    fnsToRemove.Add(List.head matches) |> ignore
-                    samplesToRemove <- sample :: samplesToRemove
-
-            if fnsToRemove.Count > 0 then
-                for toRemove in fnsToRemove do
-                    fns <- Seq.removeAt toRemove fns
-
-        if not (List.isEmpty samplesToRemove) then
-            for toRemove in samplesToRemove do
-                ss <- Set.remove toRemove ss
+        matches
+        |> Seq.map (fun (_, fnList) -> Set.toList fnList)
+        |> Seq.toList
+        |> List.concat
+        |> List.sortDescending
+        |> List.iter (fun ndx -> fns <- fns |> Seq.removeAt ndx)
 
     fnMap
 
 let runProg (prog: list<U.RawInstr>) (opCodeMap: Map<int, (U.State -> U.RawInstr -> U.State)>) =
     let rec exec prog (state: U.State) =
-        printfn $"EXEC {state}"
-
         match prog with
         | [] -> state.[0]
         | instr :: rest ->
@@ -65,16 +68,4 @@ let run (input: string) =
     let config = U.parse input
     let opCodeMap = findOpCodes config.Samples
 
-    let fn = opCodeMap.[1]
-
-    let state =
-        U.newState [| (0, 1)
-                      (1, 0)
-                      (2, 0)
-                      (3, 3) |]
-
-    let after = U.mulr state (U.RawInstr(1, 0, 2, 2))
-
-    printfn $"AFTER {U.stateToString after}"
-    // printfn $"RESULT {runProg config.Prog opCodeMap}"
-    0
+    runProg config.Prog opCodeMap
