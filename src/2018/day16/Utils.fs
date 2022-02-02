@@ -17,6 +17,9 @@ type Config =
 
 let newState values = Map values
 
+let stateToString (state: State) =
+    $"{state.[0]},{state.[1]},{state.[2]},{state.[3]}"
+
 let parseInstr (line: string) =
     try
         let parts =
@@ -87,6 +90,7 @@ let addr state instr = rr state instr (+)
 let addi state instr = ri state instr (+)
 
 let mulr state instr = rr state instr (*)
+
 let muli state instr = ri state instr (*)
 
 let banr state instr = rr state instr (&&&)
