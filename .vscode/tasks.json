@@ -43,7 +43,7 @@
                 "release",
             ],
             "options": {
-                "cwd": "${workspaceFolder}/test/2018/Day16"
+                "cwd": "${workspaceFolder}/test/2018/Day17"
             },
             "problemMatcher": []
         },
