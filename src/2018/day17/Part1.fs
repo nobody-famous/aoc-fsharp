@@ -66,14 +66,14 @@ let parse (input: string) =
     |> toGrid
 
 let fillWater (startPt: G.Point) (grid: Grid) =
-    let (_, maxPt) =
+    let (minPt, maxPt) =
         G.findBounds (Map.keys grid |> Seq.toList)
 
     let rec doDrop toDrop curGrid =
         let rec verticalDrop nextPt curGrid =
             match nextPt with
             | pt when Map.containsKey pt curGrid -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
-            | pt when pt.Y > maxPt.Y -> (pt, curGrid)
+            | pt when pt.Y > maxPt.Y || pt.Y < minPt.Y -> (pt, curGrid)
             | pt -> verticalDrop { pt with G.Y = pt.Y + 1 } (Map.add pt Water curGrid)
 
         let rec horizontalFill (startPt: G.Point) curGrid =
@@ -84,7 +84,7 @@ let fillWater (startPt: G.Point) (grid: Grid) =
                     (pt :: nextDrops, (Map.add pt Water curGrid))
                 | pt -> fill dx { pt with G.X = pt.X + dx } nextDrops (Map.add pt Water curGrid)
 
-            if startPt.Y > maxPt.Y then
+            if startPt.Y > maxPt.Y || startPt.Y < minPt.Y then
                 ([], curGrid)
             else
                 let (newToDrop, newGrid) =
@@ -109,11 +109,16 @@ let fillWater (startPt: G.Point) (grid: Grid) =
 
     doDrop [ startPt ] grid
 
+let debugPrint grid =
+    printGrid grid
+    grid
+
 let run (input: string) =
     let grid = parse input
 
     grid
     |> fillWater { G.X = 500; G.Y = 0 }
+    |> debugPrint
     |> Map.values
     |> Seq.sumBy (fun v ->
         match v with
