@@ -65,9 +65,57 @@ let parse (input: string) =
     |> List.concat
     |> toGrid
 
+let fillWater (startPt: G.Point) (grid: Grid) =
+    let (_, maxPt) =
+        G.findBounds (Map.keys grid |> Seq.toList)
+
+    let rec doDrop toDrop curGrid =
+        let rec verticalDrop nextPt curGrid =
+            match nextPt with
+            | pt when Map.containsKey pt curGrid -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
+            | pt when pt.Y > maxPt.Y -> (pt, curGrid)
+            | pt -> verticalDrop { pt with G.Y = pt.Y + 1 } (Map.add pt Water curGrid)
+
+        let rec horizontalFill (startPt: G.Point) curGrid =
+            let rec fill dx nextPt nextDrops curGrid =
+                match nextPt with
+                | pt when Map.containsKey pt curGrid -> (nextDrops, curGrid)
+                | pt when not (Map.containsKey { pt with G.Y = pt.Y + 1 } curGrid) ->
+                    (pt :: nextDrops, (Map.add pt Water curGrid))
+                | pt -> fill dx { pt with G.X = pt.X + dx } nextDrops (Map.add pt Water curGrid)
+
+            if startPt.Y > maxPt.Y then
+                ([], curGrid)
+            else
+                let (newToDrop, newGrid) =
+                    curGrid
+                    |> fill 1 { startPt with G.X = startPt.X + 1 } []
+                    ||> fill -1 { startPt with G.X = startPt.X - 1 }
+
+                if List.isEmpty newToDrop then
+                    horizontalFill { startPt with G.Y = startPt.Y - 1 } newGrid
+                else
+                    (newToDrop, newGrid)
+
+        match toDrop with
+        | pt :: rest ->
+            let (newToDrop, newGrid) =
+                curGrid
+                |> verticalDrop { pt with G.Y = pt.Y + 1 }
+                ||> horizontalFill
+
+            doDrop (List.append rest newToDrop) newGrid
+        | [] -> curGrid
+
+    doDrop [ startPt ] grid
+
 let run (input: string) =
     let grid = parse input
 
-    printGrid grid
-
-    0
+    grid
+    |> fillWater { G.X = 500; G.Y = 0 }
+    |> Map.values
+    |> Seq.sumBy (fun v ->
+        match v with
+        | Water -> 1
+        | _ -> 0)
