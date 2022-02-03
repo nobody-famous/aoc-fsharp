@@ -53,7 +53,7 @@ let printGrid (grid: Grid) =
                 | Water -> printf "~"
                 | Spring -> printf "+"
             else
-                printf "."
+                printf " "
 
         printfn ""
 
@@ -72,7 +72,10 @@ let fillWater (startPt: G.Point) (grid: Grid) =
     let rec doDrop toDrop curGrid =
         let rec verticalDrop nextPt curGrid =
             match nextPt with
-            | pt when Map.containsKey pt curGrid -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
+            | pt when Map.containsKey pt curGrid ->
+                match Map.find pt curGrid with
+                | Water -> (pt, curGrid)
+                | _ -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
             | pt when pt.Y > maxPt.Y || pt.Y < minPt.Y -> (pt, curGrid)
             | pt -> verticalDrop { pt with G.Y = pt.Y + 1 } (Map.add pt Water curGrid)
 
@@ -85,6 +88,9 @@ let fillWater (startPt: G.Point) (grid: Grid) =
                 | pt -> fill dx { pt with G.X = pt.X + dx } nextDrops (Map.add pt Water curGrid)
 
             if startPt.Y > maxPt.Y || startPt.Y < minPt.Y then
+                ([], curGrid)
+            else if Map.containsKey { startPt with G.X = startPt.X + 1 } curGrid
+                    && Map.containsKey { startPt with G.X = startPt.X - 1 } curGrid then
                 ([], curGrid)
             else
                 let (newToDrop, newGrid) =

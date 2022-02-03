@@ -14,9 +14,23 @@ let sample =
     y=13, x=498..504
     """
 
+let sample2 =
+    """
+    y=5, x=499..509
+    x=499, y=3..5
+    x=509, y=2..5
+    y=15, x=496..508
+    y=20, x=490..510
+    x=496, y=10..15
+    x=508, y=10..15
+    x=499, y=12..13
+    x=500, y=12..13
+    """
+
 [<Test>]
 let Part1 () =
-    Assert.AreEqual(57, Aoc.Year2018.Day17.Part1.run sample)
+    // Assert.AreEqual(57, Aoc.Year2018.Day17.Part1.run sample)
+    Assert.AreEqual(57, Aoc.Year2018.Day17.Part1.run sample2)
 
 [<EntryPoint>]
 let main _ = 0
