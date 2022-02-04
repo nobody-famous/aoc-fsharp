@@ -50,7 +50,7 @@ let printGrid (grid: Grid) =
             if Map.containsKey pt grid then
                 match Map.find pt grid with
                 | Clay -> printf "#"
-                | Water -> printf "~"
+                | Water -> printf "."
                 | Spring -> printf "+"
             else
                 printf " "
@@ -116,42 +116,79 @@ let parse (input: string) =
 //     doDrop [ startPt ] grid
 
 let vertical pt grid =
+    let (_, maxPt) =
+        G.findBounds (Map.keys grid |> Seq.toList)
+
     let rec loop curPt curGrid =
         match curPt with
         | pt when Map.containsKey pt curGrid ->
             match Map.find pt curGrid with
-            | Water -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
+            | Water -> (pt, curGrid)
             | _ -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
+        | pt when pt.Y > maxPt.Y -> (pt, curGrid)
         | pt -> loop { pt with G.Y = pt.Y + 1 } (Map.add pt Water curGrid)
 
     loop { pt with G.Y = pt.Y + 1 } grid
 
-let rec horizontal pt dropSet grid =
-    let rec fill dx curPt curDropSet curGrid =
-        match curPt with
-        | pt when not (Map.containsKey { pt with G.Y = pt.Y + 1 } curGrid) ->
-            (Set.add pt curDropSet, (Map.add pt Water curGrid))
-        | pt when Map.containsKey pt curGrid ->
-            match Map.find pt curGrid with
-            | Water -> fill dx { pt with G.X = pt.X + dx } curDropSet curGrid
-            | _ -> (curDropSet, curGrid)
-        | pt -> fill dx { pt with G.X = pt.X + dx } curDropSet (Map.add pt Water curGrid)
+let rec horizontal (pt: G.Point) origGrid =
+    let (_, maxPt) =
+        G.findBounds (Map.keys origGrid |> Seq.toList)
 
-    let (newDropSet, newGrid) =
-        (dropSet, grid)
-        ||> fill 1 { pt with G.X = pt.X + 1 }
-        ||> fill -1 { pt with G.X = pt.X + 1 }
+    let rec loop pt dropSet grid =
+        let rec fill dx (curPt: G.Point) curDropSet curGrid =
+            match curPt with
+            | pt when not (Map.containsKey { pt with G.Y = pt.Y + 1 } curGrid) ->
+                (Set.add pt curDropSet, (Map.add pt Water curGrid))
+            | pt when Map.containsKey pt curGrid ->
+                match Map.find pt curGrid with
+                | Water -> fill dx { pt with G.X = pt.X + dx } curDropSet curGrid
+                | _ -> (curDropSet, curGrid)
+            | pt -> fill dx { pt with G.X = pt.X + dx } curDropSet (Map.add pt Water curGrid)
 
-    if Set.isEmpty newDropSet then
-        horizontal { pt with G.Y = pt.Y - 1 } newDropSet newGrid
+        let (newDropSet, newGrid) =
+            (dropSet, (Map.add pt Water grid))
+            ||> fill 1 { pt with G.X = pt.X + 1 }
+            ||> fill -1 { pt with G.X = pt.X - 1 }
+
+        if Set.isEmpty newDropSet then
+            loop { pt with G.Y = pt.Y - 1 } newDropSet newGrid
+        else
+            (newDropSet, newGrid)
+
+    if pt.Y > maxPt.Y then
+        (Set.empty, origGrid)
     else
-        (newDropSet, newGrid)
+        loop pt Set.empty origGrid
+
+let doAllDrops (dropSet: Set<G.Point>) (grid: Grid) =
+    dropSet
+    |> Set.fold
+        (fun (endPoints, oldGrid) pt ->
+            let (endPt, newGrid) = vertical pt oldGrid
+
+            ((Set.add endPt endPoints), newGrid))
+        (Set.empty, grid)
+
+let fillAll (pts: Set<G.Point>) (grid: Grid) =
+    pts
+    |> Set.fold
+        (fun (oldDrops, oldGrid) pt ->
+            let (toDrop, newGrid) = horizontal pt oldGrid
+            (Set.union toDrop oldDrops, newGrid))
+        (Set.empty, grid)
 
 let fillWater (startPt: G.Point) (grid: Grid) =
-    let (dropPt, newGrid) = grid |> vertical startPt
-    let (newDropSet, newGrid) = horizontal dropPt Set.empty newGrid
+    let rec loop toDrop curGrid count =
+        if count > 4 || Set.isEmpty toDrop then
+            curGrid
+        else
+            let (toFill, newGrid) = doAllDrops toDrop curGrid
+            let (newToDrop, newGrid) = fillAll toFill newGrid
 
-    newGrid
+            loop newToDrop newGrid (count + 1)
+    // newGrid
+
+    loop (Set.add startPt Set.empty) grid 0
 
 let debugPrint grid =
     printGrid grid
