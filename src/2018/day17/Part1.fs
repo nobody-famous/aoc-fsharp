@@ -193,13 +193,33 @@ let debugPrint grid =
     grid
 
 let sumWater (grid: Grid) =
+    let minClay =
+        grid.Pieces
+        |> Seq.minBy (fun entry ->
+            match entry.Value with
+            | Clay -> entry.Key.Y
+            | _ -> System.Int32.MaxValue)
+
+    let minY = minClay.Key.Y
+
+    let maxClay =
+        grid.Pieces
+        |> Seq.maxBy (fun entry ->
+            match entry.Value with
+            | Clay -> entry.Key.Y
+            | _ -> System.Int32.MinValue)
+
+    let maxY = maxClay.Key.Y
+
     grid.Pieces
-    |> Map.values
     |> Seq.sumBy (fun v ->
-        match v with
-        | FillWater
-        | DropWater -> 1
-        | _ -> 0)
+        if v.Key.Y < minY || v.Key.Y > maxY then
+            0
+        else
+            match v.Value with
+            | FillWater
+            | DropWater -> 1
+            | _ -> 0)
 
 let run (input: string) =
     let grid = parse input
