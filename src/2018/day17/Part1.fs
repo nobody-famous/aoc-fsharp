@@ -60,8 +60,11 @@ let toGrid (pts: G.Point list) =
       MaxPt = maxPt }
 
 let printGrid (grid: Grid) =
-    for y in grid.MinPt.Y .. grid.MaxPt.Y do
-        for x in grid.MinPt.X .. grid.MaxPt.X do
+    let (minPt, maxPt) =
+        G.findBounds (Map.keys grid.Pieces |> Seq.toList)
+
+    for y in minPt.Y .. maxPt.Y do
+        for x in minPt.X .. maxPt.X do
             let pt = { G.X = x; G.Y = y }
 
             if Map.containsKey pt grid.Pieces then
@@ -203,5 +206,4 @@ let run (input: string) =
 
     grid
     |> fillWater { G.X = 500; G.Y = 0 }
-    |> debugPrint
     |> sumWater
