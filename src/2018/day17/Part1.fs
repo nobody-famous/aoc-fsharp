@@ -95,15 +95,39 @@ let vertical pt (grid: Grid) =
 
 let rec horizontal (pt: G.Point) (origGrid: Grid) =
     let rec loop pt dropSet (grid: Grid) =
+        let isOverClay pt (grid: Grid) =
+            let below = { pt with G.Y = pt.Y + 1 }
+
+            if not (Map.containsKey below grid.Pieces) then
+                false
+            else
+                match Map.find below grid.Pieces with
+                | Clay -> true
+                | _ -> false
+
+        let isOverWater pt (grid: Grid) =
+            let below = { pt with G.Y = pt.Y + 1 }
+
+            if not (Map.containsKey below grid.Pieces) then
+                false
+            else
+                match Map.find below grid.Pieces with
+                | Water -> true
+                | _ -> false
+
         let rec fill dx (curPt: G.Point) curDropSet curGrid =
+            let prevPt = { curPt with G.X = curPt.X - dx }
+            let nextPt = { curPt with G.X = curPt.X + dx }
+            let belowPt = { curPt with G.Y = curPt.Y + 1 }
+
             match curPt with
-            | pt when not (Map.containsKey { pt with G.Y = pt.Y + 1 } curGrid.Pieces) ->
+            | pt when not (Map.containsKey belowPt curGrid.Pieces) ->
                 (Set.add pt curDropSet, addToGrid pt Water curGrid)
             | pt when Map.containsKey pt curGrid.Pieces ->
                 match Map.find pt curGrid.Pieces with
-                | Water -> fill dx { pt with G.X = pt.X + dx } curDropSet curGrid
+                | Water -> fill dx nextPt curDropSet curGrid
                 | _ -> (curDropSet, curGrid)
-            | pt -> fill dx { pt with G.X = pt.X + dx } curDropSet (addToGrid pt Water curGrid)
+            | pt -> fill dx nextPt curDropSet (addToGrid pt Water curGrid)
 
         let (newDropSet, newGrid) =
             (dropSet, addToGrid pt Water grid)
@@ -129,11 +153,12 @@ let doAllDrops (dropSet: Set<G.Point>) (grid: Grid) =
             ((Set.add endPt endPoints), newGrid))
         (Set.empty, grid)
 
-let fillAll (pts: Set<G.Point>) (grid: Grid) =
+let fillAll (pts: Set<G.Point>) (grid: Grid) dbgPrint =
     pts
     |> Set.fold
         (fun (oldDrops, oldGrid) pt ->
             let (newDrops, newGrid) = horizontal pt oldGrid
+            if dbgPrint then printGrid newGrid
             (Set.union newDrops oldDrops, newGrid))
         (Set.empty, grid)
 
@@ -143,7 +168,10 @@ let fillWater (startPt: G.Point) (grid: Grid) =
             curGrid
         else
             let (toFill, newGrid) = doAllDrops toDrop curGrid
-            let (newToDrop, newGrid) = fillAll toFill newGrid
+            if count = 5 then printGrid newGrid
+
+            let (newToDrop, newGrid) =
+                fillAll toFill newGrid (if count = 5 then true else false)
 
             loop newToDrop newGrid (count + 1)
 
