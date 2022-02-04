@@ -5,7 +5,8 @@ module G = Aoc.Utils.Geometry
 
 type Piece =
     | Spring
-    | Water
+    | DropWater
+    | FillWater
     | Clay
 
 type Grid =
@@ -66,7 +67,8 @@ let printGrid (grid: Grid) =
             if Map.containsKey pt grid.Pieces then
                 match Map.find pt grid.Pieces with
                 | Clay -> printf "#"
-                | Water -> printf "."
+                | DropWater -> printf "|"
+                | FillWater -> printf "."
                 | Spring -> printf "+"
             else
                 printf " "
@@ -86,33 +88,37 @@ let vertical pt (grid: Grid) =
         match curPt with
         | pt when Map.containsKey pt curGrid.Pieces ->
             match Map.find pt curGrid.Pieces with
-            | Water -> (pt, curGrid)
+            | FillWater -> (pt, curGrid)
             | _ -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
         | pt when pt.Y > grid.MaxPt.Y -> (pt, curGrid)
-        | pt -> loop { pt with G.Y = pt.Y + 1 } (addToGrid pt Water curGrid)
+        | pt -> loop { pt with G.Y = pt.Y + 1 } (addToGrid pt DropWater curGrid)
 
     loop { pt with G.Y = pt.Y + 1 } grid
 
-let rec horizontal (pt: G.Point) (origGrid: Grid) =
-    let rec loop pt dropSet (grid: Grid) =
-        let isOverClay pt (grid: Grid) =
-            let below = { pt with G.Y = pt.Y + 1 }
-
-            if not (Map.containsKey below grid.Pieces) then
+let rec horizontal (startPt: G.Point) (origGrid: Grid) =
+    let rec loop (pt: G.Point) dropSet (grid: Grid) =
+        let isClay pt (grid: Grid) =
+            if not (Map.containsKey pt grid.Pieces) then
                 false
             else
-                match Map.find below grid.Pieces with
+                match Map.find pt grid.Pieces with
                 | Clay -> true
                 | _ -> false
 
-        let isOverWater pt (grid: Grid) =
-            let below = { pt with G.Y = pt.Y + 1 }
-
-            if not (Map.containsKey below grid.Pieces) then
+        let isFillWater pt (grid: Grid) =
+            if not (Map.containsKey pt grid.Pieces) then
                 false
             else
-                match Map.find below grid.Pieces with
-                | Water -> true
+                match Map.find pt grid.Pieces with
+                | FillWater -> true
+                | _ -> false
+
+        let isDropWater pt (grid: Grid) =
+            if not (Map.containsKey pt grid.Pieces) then
+                false
+            else
+                match Map.find pt grid.Pieces with
+                | DropWater -> true
                 | _ -> false
 
         let rec fill dx (curPt: G.Point) curDropSet curGrid =
@@ -122,27 +128,32 @@ let rec horizontal (pt: G.Point) (origGrid: Grid) =
 
             match curPt with
             | pt when not (Map.containsKey belowPt curGrid.Pieces) ->
-                (Set.add pt curDropSet, addToGrid pt Water curGrid)
+                (false, Set.add pt curDropSet, addToGrid pt FillWater curGrid)
+            | _ when isDropWater belowPt curGrid -> (false, curDropSet, curGrid)
             | pt when Map.containsKey pt curGrid.Pieces ->
                 match Map.find pt curGrid.Pieces with
-                | Water -> fill dx nextPt curDropSet curGrid
-                | _ -> (curDropSet, curGrid)
-            | pt -> fill dx nextPt curDropSet (addToGrid pt Water curGrid)
+                | FillWater -> fill dx nextPt curDropSet curGrid
+                | DropWater -> fill dx nextPt curDropSet (addToGrid pt FillWater curGrid)
+                | _ -> (true, curDropSet, curGrid)
+            | pt -> fill dx nextPt curDropSet (addToGrid pt FillWater curGrid)
 
-        let (newDropSet, newGrid) =
-            (dropSet, addToGrid pt Water grid)
-            ||> fill 1 { pt with G.X = pt.X + 1 }
-            ||> fill -1 { pt with G.X = pt.X - 1 }
+        let newGrid = addToGrid pt FillWater grid
 
-        if Set.isEmpty newDropSet then
+        let (rightDone, newDropSet, newGrid) =
+            fill 1 { pt with G.X = pt.X + 1 } dropSet newGrid
+
+        let (leftDone, newDropSet, newGrid) =
+            fill -1 { pt with G.X = pt.X - 1 } newDropSet newGrid
+
+        if rightDone && leftDone then
             loop { pt with G.Y = pt.Y - 1 } newDropSet newGrid
         else
             (newDropSet, newGrid)
 
-    if pt.Y > origGrid.MaxPt.Y then
+    if startPt.Y > origGrid.MaxPt.Y then
         (Set.empty, origGrid)
     else
-        loop pt Set.empty origGrid
+        loop startPt Set.empty origGrid
 
 let doAllDrops (dropSet: Set<G.Point>) (grid: Grid) =
     dropSet
@@ -153,25 +164,22 @@ let doAllDrops (dropSet: Set<G.Point>) (grid: Grid) =
             ((Set.add endPt endPoints), newGrid))
         (Set.empty, grid)
 
-let fillAll (pts: Set<G.Point>) (grid: Grid) dbgPrint =
+let fillAll (pts: Set<G.Point>) (grid: Grid) =
     pts
     |> Set.fold
         (fun (oldDrops, oldGrid) pt ->
             let (newDrops, newGrid) = horizontal pt oldGrid
-            if dbgPrint then printGrid newGrid
             (Set.union newDrops oldDrops, newGrid))
         (Set.empty, grid)
 
 let fillWater (startPt: G.Point) (grid: Grid) =
     let rec loop toDrop curGrid count =
-        if count > 5 || Set.isEmpty toDrop then
+        if Set.isEmpty toDrop then
             curGrid
         else
             let (toFill, newGrid) = doAllDrops toDrop curGrid
-            if count = 5 then printGrid newGrid
 
-            let (newToDrop, newGrid) =
-                fillAll toFill newGrid (if count = 5 then true else false)
+            let (newToDrop, newGrid) = fillAll toFill newGrid
 
             loop newToDrop newGrid (count + 1)
 
@@ -186,7 +194,8 @@ let sumWater (grid: Grid) =
     |> Map.values
     |> Seq.sumBy (fun v ->
         match v with
-        | Water -> 1
+        | FillWater
+        | DropWater -> 1
         | _ -> 0)
 
 let run (input: string) =
