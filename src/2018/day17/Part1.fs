@@ -8,7 +8,18 @@ type Piece =
     | Water
     | Clay
 
-type Grid = Map<G.Point, Piece>
+type Grid =
+    { Pieces: Map<G.Point, Piece>
+      MinPt: G.Point
+      MaxPt: G.Point }
+
+let addToGrid pt piece grid =
+    let minPt = G.smallerPt pt grid.MinPt
+    let maxPt = G.biggerPt pt grid.MaxPt
+
+    { Pieces = Map.add pt piece grid.Pieces
+      MinPt = minPt
+      MaxPt = maxPt }
 
 let toRange (str: string) =
     let first = str.IndexOf '.'
@@ -36,19 +47,24 @@ let parseLine (line: string) =
               yield { G.X = x; G.Y = y } ]
 
 let toGrid (pts: G.Point list) =
-    pts
-    |> List.fold (fun m pt -> Map.add pt Clay m) (Map<G.Point, Piece>([ { G.X = 500; G.Y = 0 }, Spring ]))
+    let board =
+        pts
+        |> List.fold (fun m pt -> Map.add pt Clay m) (Map<G.Point, Piece>([ { G.X = 500; G.Y = 0 }, Spring ]))
+
+    let (minPt, maxPt) =
+        G.findBounds (Map.keys board |> Seq.toList)
+
+    { Pieces = board
+      MinPt = minPt
+      MaxPt = maxPt }
 
 let printGrid (grid: Grid) =
-    let (minPt, maxPt) =
-        G.findBounds (Map.keys grid |> Seq.toList)
-
-    for y in minPt.Y .. maxPt.Y do
-        for x in minPt.X .. maxPt.X do
+    for y in grid.MinPt.Y .. grid.MaxPt.Y do
+        for x in grid.MinPt.X .. grid.MaxPt.X do
             let pt = { G.X = x; G.Y = y }
 
-            if Map.containsKey pt grid then
-                match Map.find pt grid with
+            if Map.containsKey pt grid.Pieces then
+                match Map.find pt grid.Pieces with
                 | Clay -> printf "#"
                 | Water -> printf "."
                 | Spring -> printf "+"
@@ -65,88 +81,32 @@ let parse (input: string) =
     |> List.concat
     |> toGrid
 
-// let fillWater (startPt: G.Point) (grid: Grid) =
-//     let (minPt, maxPt) =
-//         G.findBounds (Map.keys grid |> Seq.toList)
-
-//     let rec doDrop toDrop curGrid =
-//         let rec verticalDrop nextPt curGrid =
-//             match nextPt with
-//             | pt when Map.containsKey pt curGrid ->
-//                 match Map.find pt curGrid with
-//                 | Water -> (pt, curGrid)
-//                 | _ -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
-//             | pt when pt.Y > maxPt.Y || pt.Y < minPt.Y -> (pt, curGrid)
-//             | pt -> verticalDrop { pt with G.Y = pt.Y + 1 } (Map.add pt Water curGrid)
-
-//         let rec horizontalFill (startPt: G.Point) curGrid =
-//             let rec fill dx nextPt nextDrops curGrid =
-//                 match nextPt with
-//                 | pt when Map.containsKey pt curGrid -> (nextDrops, curGrid)
-//                 | pt when not (Map.containsKey { pt with G.Y = pt.Y + 1 } curGrid) ->
-//                     (pt :: nextDrops, (Map.add pt Water curGrid))
-//                 | pt -> fill dx { pt with G.X = pt.X + dx } nextDrops (Map.add pt Water curGrid)
-
-//             if startPt.Y > maxPt.Y || startPt.Y < minPt.Y then
-//                 ([], curGrid)
-//             else if Map.containsKey { startPt with G.X = startPt.X + 1 } curGrid
-//                     && Map.containsKey { startPt with G.X = startPt.X - 1 } curGrid then
-//                 ([], curGrid)
-//             else
-//                 let (newToDrop, newGrid) =
-//                     curGrid
-//                     |> fill 1 { startPt with G.X = startPt.X + 1 } []
-//                     ||> fill -1 { startPt with G.X = startPt.X - 1 }
-
-//                 if List.isEmpty newToDrop then
-//                     horizontalFill { startPt with G.Y = startPt.Y - 1 } newGrid
-//                 else
-//                     (newToDrop, newGrid)
-
-//         match toDrop with
-//         | pt :: rest ->
-//             let (newToDrop, newGrid) =
-//                 curGrid
-//                 |> verticalDrop { pt with G.Y = pt.Y + 1 }
-//                 ||> horizontalFill
-
-//             doDrop (List.append rest newToDrop) newGrid
-//         | [] -> curGrid
-
-//     doDrop [ startPt ] grid
-
-let vertical pt grid =
-    let (_, maxPt) =
-        G.findBounds (Map.keys grid |> Seq.toList)
-
+let vertical pt (grid: Grid) =
     let rec loop curPt curGrid =
         match curPt with
-        | pt when Map.containsKey pt curGrid ->
-            match Map.find pt curGrid with
+        | pt when Map.containsKey pt curGrid.Pieces ->
+            match Map.find pt curGrid.Pieces with
             | Water -> (pt, curGrid)
             | _ -> ({ pt with G.Y = pt.Y - 1 }, curGrid)
-        | pt when pt.Y > maxPt.Y -> (pt, curGrid)
-        | pt -> loop { pt with G.Y = pt.Y + 1 } (Map.add pt Water curGrid)
+        | pt when pt.Y > grid.MaxPt.Y -> (pt, curGrid)
+        | pt -> loop { pt with G.Y = pt.Y + 1 } (addToGrid pt Water curGrid)
 
     loop { pt with G.Y = pt.Y + 1 } grid
 
-let rec horizontal (pt: G.Point) origGrid =
-    let (_, maxPt) =
-        G.findBounds (Map.keys origGrid |> Seq.toList)
-
-    let rec loop pt dropSet grid =
+let rec horizontal (pt: G.Point) (origGrid: Grid) =
+    let rec loop pt dropSet (grid: Grid) =
         let rec fill dx (curPt: G.Point) curDropSet curGrid =
             match curPt with
-            | pt when not (Map.containsKey { pt with G.Y = pt.Y + 1 } curGrid) ->
-                (Set.add pt curDropSet, (Map.add pt Water curGrid))
-            | pt when Map.containsKey pt curGrid ->
-                match Map.find pt curGrid with
+            | pt when not (Map.containsKey { pt with G.Y = pt.Y + 1 } curGrid.Pieces) ->
+                (Set.add pt curDropSet, addToGrid pt Water curGrid)
+            | pt when Map.containsKey pt curGrid.Pieces ->
+                match Map.find pt curGrid.Pieces with
                 | Water -> fill dx { pt with G.X = pt.X + dx } curDropSet curGrid
                 | _ -> (curDropSet, curGrid)
-            | pt -> fill dx { pt with G.X = pt.X + dx } curDropSet (Map.add pt Water curGrid)
+            | pt -> fill dx { pt with G.X = pt.X + dx } curDropSet (addToGrid pt Water curGrid)
 
         let (newDropSet, newGrid) =
-            (dropSet, (Map.add pt Water grid))
+            (dropSet, addToGrid pt Water grid)
             ||> fill 1 { pt with G.X = pt.X + 1 }
             ||> fill -1 { pt with G.X = pt.X - 1 }
 
@@ -155,7 +115,7 @@ let rec horizontal (pt: G.Point) origGrid =
         else
             (newDropSet, newGrid)
 
-    if pt.Y > maxPt.Y then
+    if pt.Y > origGrid.MaxPt.Y then
         (Set.empty, origGrid)
     else
         loop pt Set.empty origGrid
@@ -173,20 +133,19 @@ let fillAll (pts: Set<G.Point>) (grid: Grid) =
     pts
     |> Set.fold
         (fun (oldDrops, oldGrid) pt ->
-            let (toDrop, newGrid) = horizontal pt oldGrid
-            (Set.union toDrop oldDrops, newGrid))
+            let (newDrops, newGrid) = horizontal pt oldGrid
+            (Set.union newDrops oldDrops, newGrid))
         (Set.empty, grid)
 
 let fillWater (startPt: G.Point) (grid: Grid) =
     let rec loop toDrop curGrid count =
-        if count > 4 || Set.isEmpty toDrop then
+        if count > 5 || Set.isEmpty toDrop then
             curGrid
         else
             let (toFill, newGrid) = doAllDrops toDrop curGrid
             let (newToDrop, newGrid) = fillAll toFill newGrid
 
             loop newToDrop newGrid (count + 1)
-    // newGrid
 
     loop (Set.add startPt Set.empty) grid 0
 
@@ -194,14 +153,18 @@ let debugPrint grid =
     printGrid grid
     grid
 
+let sumWater (grid: Grid) =
+    grid.Pieces
+    |> Map.values
+    |> Seq.sumBy (fun v ->
+        match v with
+        | Water -> 1
+        | _ -> 0)
+
 let run (input: string) =
     let grid = parse input
 
     grid
     |> fillWater { G.X = 500; G.Y = 0 }
     |> debugPrint
-    |> Map.values
-    |> Seq.sumBy (fun v ->
-        match v with
-        | Water -> 1
-        | _ -> 0)
+    |> sumWater

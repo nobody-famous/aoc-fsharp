@@ -3,6 +3,14 @@
 [<Struct>]
 type Point = { X: int; Y: int }
 
+let smallerPt pt1 pt2 =
+    { X = min pt1.X pt2.X
+      Y = min pt1.Y pt2.Y }
+
+let biggerPt pt1 pt2 =
+    { X = max pt1.X pt2.X
+      Y = max pt1.Y pt2.Y }
+
 let findBounds (pts: Point list) : Point * Point =
     List.fold
         (fun (minPt, maxPt) (pt: Point) ->
