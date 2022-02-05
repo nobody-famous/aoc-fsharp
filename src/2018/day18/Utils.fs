@@ -8,32 +8,36 @@ type Piece =
     | Tree
     | Yard
 
-let parseLine y (line: string) (grid: Map<int * int, Piece>) =
+type Grid = System.Collections.Generic.Dictionary<(int * int), Piece>
+
+let parseLine y (line: string) (grid: Grid) =
     line
     |> Seq.mapi (fun x ch -> (x, ch))
-    |> Seq.fold
-        (fun oldGrid (x, ch) ->
-            match ch with
-            | '.' -> Map.add (x, y) Empty oldGrid
-            | '|' -> Map.add (x, y) Tree oldGrid
-            | '#' -> Map.add (x, y) Yard oldGrid
-            | _ -> raise (System.Exception $"Invalid line {line}"))
-        grid
+    |> Seq.iter (fun (x, ch) ->
+        match ch with
+        | '.' -> grid.[(x, y)] <- Empty
+        | '|' -> grid.[(x, y)] <- Tree
+        | '#' -> grid.[(x, y)] <- Yard
+        | _ -> raise (System.Exception $"Invalid line {line}"))
 
 let parse (input: string) =
+    let grid = Grid()
+
     input.Split '\n'
     |> S.trimIndent
     |> Array.mapi (fun y line -> (y, line))
-    |> Array.fold (fun grid (y, line) -> parseLine y line grid) Map.empty
+    |> Array.iter (fun (y, line) -> parseLine y line grid)
 
-let printGrid grid =
+    grid
+
+let printGrid (grid: Grid) =
     let ((minX, minY), (maxX, maxY)) =
-        G.findTupleBounds (Map.keys grid |> Seq.toList)
+        grid.Keys |> Seq.toList |> G.findTupleBounds
 
     for y in minY .. maxY do
         for x in minX .. maxX do
-            if Map.containsKey (x, y) grid then
-                match Map.find (x, y) grid with
+            if grid.ContainsKey(x, y) then
+                match grid.[(x, y)] with
                 | Tree -> printf "|"
                 | Yard -> printf "#"
                 | Empty -> printf "."
@@ -42,22 +46,22 @@ let printGrid grid =
 
         printfn ""
 
-let getNeighbors (x, y) grid =
+let getNeighbors (x, y) (grid: Grid) =
     [ for dx in -1 .. 1 do
           for dy in -1 .. 1 do
               if not (dx = 0 && dy = 0) then
                   yield (x + dx, y + dy) ]
-    |> List.filter (fun pt -> Map.containsKey pt grid)
-    |> List.map (fun pt -> Map.find pt grid)
+    |> List.filter (fun pt -> grid.ContainsKey pt)
+    |> List.map (fun pt -> grid.[pt])
 
-let getCount (grid: Map<(int * int), Piece>) target =
+let getCount (grid: Grid) target =
     grid
     |> Seq.sumBy (fun kv ->
         match kv.Value with
         | v when v = target -> 1
         | _ -> 0)
 
-let getNewPiece (x, y) grid =
+let getNewPiece (x, y) (grid: Grid) =
     let countPieces pieceList target =
         pieceList
         |> List.sumBy (fun piece ->
@@ -86,18 +90,20 @@ let getNewPiece (x, y) grid =
 
     let neigbors = getNeighbors (x, y) grid
 
-    match Map.find (x, y) grid with
+    match grid.[(x, y)] with
     | Empty -> updateEmpty neigbors
     | Tree -> updateTree neigbors
     | Yard -> updateYard neigbors
 
-let runMinute (grid: Map<(int * int), Piece>) =
-    grid
-    |> Seq.map (fun kv -> kv.Key)
-    |> Seq.map (fun pt -> (pt, getNewPiece pt grid))
-    |> Seq.fold (fun newGrid (pt, piece) -> Map.add pt piece newGrid) Map.empty
+let runMinute (grid: Grid) =
+    let newGrid = Grid()
 
-let getAnswer (grid: Map<(int * int), Piece>) =
+    grid
+    |> Seq.iter (fun kv -> newGrid.[kv.Key] <- getNewPiece kv.Key grid)
+
+    newGrid
+
+let getAnswer (grid: Grid) =
     let trees = getCount grid Tree
     let yards = getCount grid Yard
 
