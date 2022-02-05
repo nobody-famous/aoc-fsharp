@@ -24,5 +24,11 @@ let findBounds (pts: Point list) : Point * Point =
            Y = System.Int32.MinValue })
         pts
 
+let findTupleBounds (pts: (int * int) list) =
+    pts
+    |> List.fold
+        (fun ((minX, minY), (maxX, maxY)) (x, y) -> (min x minX, min y minY), (max x maxX, max y maxY))
+        ((System.Int32.MaxValue, System.Int32.MaxValue), (System.Int32.MinValue, System.Int32.MinValue))
+
 let manDist pt1 pt2 =
     abs (pt1.X - pt2.X) + abs (pt1.Y - pt2.Y)
