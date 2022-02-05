@@ -34,6 +34,30 @@ let toRange (str: string) =
 
         seq { startValue .. endValue }
 
+let isClay pt (grid: Grid) =
+    if not (Map.containsKey pt grid.Pieces) then
+        false
+    else
+        match Map.find pt grid.Pieces with
+        | Clay -> true
+        | _ -> false
+
+let isFillWater pt (grid: Grid) =
+    if not (Map.containsKey pt grid.Pieces) then
+        false
+    else
+        match Map.find pt grid.Pieces with
+        | FillWater -> true
+        | _ -> false
+
+let isDropWater pt (grid: Grid) =
+    if not (Map.containsKey pt grid.Pieces) then
+        false
+    else
+        match Map.find pt grid.Pieces with
+        | DropWater -> true
+        | _ -> false
+
 let parseLine (line: string) =
     let parts =
         line.Split ','
@@ -100,30 +124,6 @@ let vertical pt (grid: Grid) =
 
 let rec horizontal (startPt: G.Point) (origGrid: Grid) =
     let rec loop (pt: G.Point) dropSet (grid: Grid) =
-        let isClay pt (grid: Grid) =
-            if not (Map.containsKey pt grid.Pieces) then
-                false
-            else
-                match Map.find pt grid.Pieces with
-                | Clay -> true
-                | _ -> false
-
-        let isFillWater pt (grid: Grid) =
-            if not (Map.containsKey pt grid.Pieces) then
-                false
-            else
-                match Map.find pt grid.Pieces with
-                | FillWater -> true
-                | _ -> false
-
-        let isDropWater pt (grid: Grid) =
-            if not (Map.containsKey pt grid.Pieces) then
-                false
-            else
-                match Map.find pt grid.Pieces with
-                | DropWater -> true
-                | _ -> false
-
         let rec fill dx (curPt: G.Point) curDropSet curGrid =
             let nextPt = { curPt with G.X = curPt.X + dx }
             let belowPt = { curPt with G.Y = curPt.Y + 1 }

@@ -49,8 +49,12 @@ let sample3 =
 [<Test>]
 let Part1 () =
     Assert.AreEqual(57, Aoc.Year2018.Day17.Part1.run sample)
-    Assert.AreEqual(213, Aoc.Year2018.Day17.Part1.run sample2)
-    Assert.AreEqual(194, Aoc.Year2018.Day17.Part1.run sample3)
+    Assert.AreEqual(198, Aoc.Year2018.Day17.Part1.run sample2)
+    Assert.AreEqual(179, Aoc.Year2018.Day17.Part1.run sample3)
+
+[<Test>]
+let Part2() =
+    Assert.AreEqual(29, Aoc.Year2018.Day17.Part2.run sample)
 
 [<EntryPoint>]
 let main _ = 0
