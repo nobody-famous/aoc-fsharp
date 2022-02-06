@@ -69,31 +69,18 @@ let getNewPiece (x, y) (grid: Grid) =
             | p when p = target -> 1
             | _ -> 0)
 
-    let updateEmpty neigbors =
-        let numTrees = countPieces neigbors Tree
+    let neigbors = getNeighbors (x, y) grid
+    let numTrees = countPieces neigbors Tree
+    let numYards = countPieces neigbors Yard
 
-        if numTrees >= 3 then Tree else Empty
-
-    let updateTree neigbors =
-        let numYards = countPieces neigbors Yard
-
-        if numYards >= 3 then Yard else Tree
-
-    let updateYard neigbors =
-        let numYards = countPieces neigbors Yard
-        let numTrees = countPieces neigbors Tree
-
+    match grid.[(x, y)] with
+    | Empty -> if numTrees >= 3 then Tree else Empty
+    | Tree -> if numYards >= 3 then Yard else Tree
+    | Yard ->
         if numYards >= 1 && numTrees >= 1 then
             Yard
         else
             Empty
-
-    let neigbors = getNeighbors (x, y) grid
-
-    match grid.[(x, y)] with
-    | Empty -> updateEmpty neigbors
-    | Tree -> updateTree neigbors
-    | Yard -> updateYard neigbors
 
 let runMinute (grid: Grid) =
     let newGrid = Grid()

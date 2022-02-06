@@ -2,63 +2,43 @@
 
 module U = Aoc.Year2018.Day18.Utils
 
-type ValueList = System.Collections.Generic.List<int>
+type GridMap = System.Collections.Generic.Dictionary<int, int>
 
-let hasCycle (values: ValueList) =
-    let mutable power = 1
-    let mutable lam = 1
-    let mutable t = values.Count - 1
-    let mutable h = values.Count - 2
+let hashPoint (x, y) = x + y
 
-    while h >= 0 && values.[t] <> values.[h] do
-        if power = lam then
-            t <- h
-            power <- power * 2
-            lam <- 0
-
-        h <- h - 1
-        lam <- lam + 1
-
-    if h < 0 then
-        false
-    else
-        t <- values.Count - 1
-        h <- values.Count - 1 - lam
-
-        let mutable mu = 0
-
-        while h >= 0 && values.[t] <> values.[h] do
-            t <- t - 1
-            h <- h - 1
-            mu <- mu + 1
-
-        if h < 0 then
-            false
-        else
-            // printfn $"MU {mu} LAMBDA {lam} {t} {h}"
-            // for ndx in h - lam .. values.Count - 1 do
-            //     printfn $"{ndx} {values.[ndx]}"
-            true
+let hashGrid (grid: U.Grid) =
+    grid
+    |> Seq.sumBy (fun kv ->
+        match kv.Value with
+        | U.Empty -> hashPoint kv.Key
+        | U.Tree -> hashPoint (fst kv.Key * 100, snd kv.Key * 100)
+        | U.Yard -> hashPoint (fst kv.Key * 1000, snd kv.Key * 1000))
 
 let run (input: string) =
     let grid = U.parse input
 
-    let values = ValueList()
+    let target = 1000000000
 
-    let rec loop count curGrid =
-        let value = U.getResourceValue curGrid
+    let rec loop (seen: GridMap) count endCount curGrid =
+        let hash = hashGrid curGrid
 
-        if value = 186706 then printfn $"{count} {value}"
-        values.Add value
+        if count = endCount then
+            (0, curGrid)
+        else if seen.ContainsKey hash then
+            let start = seen.[hash]
+            let newTarget = target - start
+            let cycle = count - start
+            let cycleCount = newTarget / cycle
+            let remSteps = newTarget - (cycle * cycleCount)
 
-        if hasCycle values then
-            curGrid
+            (remSteps, curGrid)
         else
-            loop (count + 1) (U.runMinute curGrid)
-    // hasCycle values |> ignore
+            seen.[hash] <- count
 
-    // match count with
-    // | 500 -> curGrid
-    // | _ -> loop (count + 1) (U.runMinute curGrid)
+            loop seen (count + 1) endCount (U.runMinute curGrid)
 
-    grid |> loop 0 |> U.getResourceValue
+    grid
+    |> loop (GridMap()) 0 target
+    ||> loop (GridMap()) 0
+    |> snd
+    |> U.getResourceValue
