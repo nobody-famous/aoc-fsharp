@@ -103,7 +103,7 @@ let runMinute (grid: Grid) =
 
     newGrid
 
-let getAnswer (grid: Grid) =
+let getResourceValue (grid: Grid) =
     let trees = getCount grid Tree
     let yards = getCount grid Yard
 

@@ -10,4 +10,4 @@ let run (input: string) =
         | 10 -> curGrid
         | _ -> loop (count + 1) (U.runMinute curGrid)
 
-    grid |> loop 0 |> U.getAnswer
+    grid |> loop 0 |> U.getResourceValue
