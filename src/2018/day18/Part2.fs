@@ -2,28 +2,34 @@
 
 module U = Aoc.Year2018.Day18.Utils
 
-type GridMap = System.Collections.Generic.Dictionary<int, int>
+type BoardMap = System.Collections.Generic.Dictionary<int, int>
 
-let hashPoint (x, y) = x + y
+let hashPoint x y = x + y
 
-let hashGrid (grid: U.Grid) =
-    grid
-    |> Seq.sumBy (fun kv ->
-        match kv.Value with
-        | U.Empty -> hashPoint kv.Key
-        | U.Tree -> hashPoint (fst kv.Key * 100, snd kv.Key * 100)
-        | U.Yard -> hashPoint (fst kv.Key * 1000, snd kv.Key * 1000))
+let hashBoard (board: U.Board) =
+    let mutable hash = 0
+
+    for x in 0 .. board.GetLength(0) - 1 do
+        for y in 0 .. board.GetLength(1) - 1 do
+            hash <-
+                hash
+                + match board.[x, y] with
+                  | U.Empty -> hashPoint x y
+                  | U.Tree -> hashPoint (x * 100) (y * 100)
+                  | U.Yard -> hashPoint (x * 1000) (y * 1000)
+
+    hash
 
 let run (input: string) =
-    let grid = U.parse input
+    let board = U.parse input
 
     let target = 1000000000
 
-    let rec loop (seen: GridMap) count endCount curGrid =
-        let hash = hashGrid curGrid
+    let rec loop (seen: BoardMap) count endCount curBoard =
+        let hash = hashBoard curBoard
 
         if count = endCount then
-            (0, curGrid)
+            (0, curBoard)
         else if seen.ContainsKey hash then
             let start = seen.[hash]
             let newTarget = target - start
@@ -31,14 +37,14 @@ let run (input: string) =
             let cycleCount = newTarget / cycle
             let remSteps = newTarget - (cycle * cycleCount)
 
-            (remSteps, curGrid)
+            (remSteps, curBoard)
         else
             seen.[hash] <- count
 
-            loop seen (count + 1) endCount (U.runMinute curGrid)
+            loop seen (count + 1) endCount (U.runMinute curBoard)
 
-    grid
-    |> loop (GridMap()) 0 target
-    ||> loop (GridMap()) 0
+    board
+    |> loop (BoardMap()) 0 target
+    ||> loop (BoardMap()) 0
     |> snd
     |> U.getResourceValue

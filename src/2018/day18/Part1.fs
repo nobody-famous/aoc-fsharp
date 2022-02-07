@@ -3,11 +3,11 @@
 module U = Aoc.Year2018.Day18.Utils
 
 let run (input: string) =
-    let grid = U.parse input
+    let board = U.parse input
 
-    let rec loop count curGrid =
+    let rec loop count curBoard =
         match count with
-        | 10 -> curGrid
-        | _ -> loop (count + 1) (U.runMinute curGrid)
+        | 10 -> curBoard
+        | _ -> loop (count + 1) (U.runMinute curBoard)
 
-    grid |> loop 0 |> U.getResourceValue
+    board |> loop 0 |> U.getResourceValue

@@ -9,6 +9,7 @@ type Piece =
     | Yard
 
 type Grid = System.Collections.Generic.Dictionary<(int * int), Piece>
+type Board = Piece [,]
 
 let parseLine y (line: string) (grid: Grid) =
     line
@@ -28,40 +29,53 @@ let parse (input: string) =
     |> Array.mapi (fun y line -> (y, line))
     |> Array.iter (fun (y, line) -> parseLine y line grid)
 
-    grid
-
-let printGrid (grid: Grid) =
     let ((minX, minY), (maxX, maxY)) =
-        grid.Keys |> Seq.toList |> G.findTupleBounds
+        G.findTupleBounds (grid.Keys |> Seq.toList)
 
-    for y in minY .. maxY do
-        for x in minX .. maxX do
-            if grid.ContainsKey(x, y) then
-                match grid.[(x, y)] with
-                | Tree -> printf "|"
-                | Yard -> printf "#"
-                | Empty -> printf "."
-            else
-                printf "?"
+    Array2D.init (maxX - minX + 1) (maxY - minY + 1) (fun x y -> grid.[(x, y)])
+
+let printBoard (board: Board) =
+    for y in 0 .. board.GetLength(1) - 1 do
+        for x in 0 .. board.GetLength(0) - 1 do
+            match board.[x, y] with
+            | Tree -> printf "|"
+            | Yard -> printf "#"
+            | Empty -> printf "."
 
         printfn ""
 
-let getNeighbors (x, y) (grid: Grid) =
-    [ for dx in -1 .. 1 do
-          for dy in -1 .. 1 do
-              if not (dx = 0 && dy = 0) then
-                  yield (x + dx, y + dy) ]
-    |> List.filter (fun pt -> grid.ContainsKey pt)
-    |> List.map (fun pt -> grid.[pt])
+let isOnBoard x y (board: Board) =
+    x >= 0
+    && x < board.GetLength(0)
+    && y >= 0
+    && y < board.GetLength(1)
 
-let getCount (grid: Grid) target =
-    grid
-    |> Seq.sumBy (fun kv ->
-        match kv.Value with
-        | v when v = target -> 1
-        | _ -> 0)
+let getNeighbors (x, y) (board: Board) =
+    [ (x - 1, y - 1)
+      (x - 1, y)
+      (x - 1, y + 1)
+      (x, y - 1)
+      (x, y + 1)
+      (x + 1, y - 1)
+      (x + 1, y)
+      (x + 1, y + 1) ]
+    |> List.filter (fun (x, y) -> isOnBoard x y board)
+    |> List.map (fun (x, y) -> board.[x, y])
 
-let getNewPiece (x, y) (grid: Grid) =
+let getCount (board: Board) target =
+    let mutable count = 0
+
+    for x in 0 .. board.GetLength(0) - 1 do
+        for y in 0 .. board.GetLength(1) - 1 do
+            count <-
+                count
+                + match board.[x, y] with
+                  | v when v = target -> 1
+                  | _ -> 0
+
+    count
+
+let getNewPiece (x, y) (board: Board) =
     let countPieces pieceList target =
         pieceList
         |> List.sumBy (fun piece ->
@@ -69,11 +83,11 @@ let getNewPiece (x, y) (grid: Grid) =
             | p when p = target -> 1
             | _ -> 0)
 
-    let neigbors = getNeighbors (x, y) grid
-    let numTrees = countPieces neigbors Tree
-    let numYards = countPieces neigbors Yard
+    let neighbors = getNeighbors (x, y) board
+    let numTrees = countPieces neighbors Tree
+    let numYards = countPieces neighbors Yard
 
-    match grid.[(x, y)] with
+    match board.[x, y] with
     | Empty -> if numTrees >= 3 then Tree else Empty
     | Tree -> if numYards >= 3 then Yard else Tree
     | Yard ->
@@ -82,16 +96,18 @@ let getNewPiece (x, y) (grid: Grid) =
         else
             Empty
 
-let runMinute (grid: Grid) =
-    let newGrid = Grid()
+let runMinute (board: Board) =
+    let newBoard =
+        Array2D.init (board.GetLength(0)) (board.GetLength(1)) (fun _ _ -> Empty)
 
-    grid
-    |> Seq.iter (fun kv -> newGrid.[kv.Key] <- getNewPiece kv.Key grid)
+    for x in 0 .. board.GetLength(0) - 1 do
+        for y in 0 .. board.GetLength(1) - 1 do
+            newBoard.[x, y] <- getNewPiece (x, y) board
 
-    newGrid
+    newBoard
 
-let getResourceValue (grid: Grid) =
-    let trees = getCount grid Tree
-    let yards = getCount grid Yard
+let getResourceValue (board: Board) =
+    let trees = getCount board Tree
+    let yards = getCount board Yard
 
     trees * yards
