@@ -75,17 +75,16 @@ let mach r0 =
         b <- initB
         e <- initE
 
+        let newOldB = b
+
         c <- b * e
         if c = d then a <- a + b
 
         e <- e + 1
+
         if e > d then
             b <- b + 1
-            if b <= d
-                then loop b 1
-                else
-                    printfn $"LOOP {a} {b} {c} {d} {e}"
-                    a
+            if b <= d then loop b 1 else a
         else
             loop b e
 
@@ -102,41 +101,5 @@ let mach r0 =
 let run (input: string) =
     let state = parse input
 
-    mach 1
-
-// while not state.Mach.Halt do
-//     exec state
-
-// state.Mach.Registers.[0]
-
-// INIT
-// GOTO MAIN
-
-// INNER_LOOP
-// b = 1
-
-// INNER_LOOP_INIT_E
-// e = 1
-
-// INNER_LOOP_NO_INIT
-// c = b * e
-// if c == d
-//   a += b
-// e += 1
-// if e > d
-//   b += 1
-//   if b > d
-//     exit
-//   else GOTO_INNER_LOOP_INIT_E
-// else GOTO INNER_LOOP_NO_INIT
-
-// MAIN
-// d = (d + 2) * (d + 2) * 209
-// c = (c + 5) * 22 + 1
-// d = d + c
-// if a == 0
-//   GOTO INNER_LOOP
-// c = 10550400
-// d += c
-// a = 0
-// GOTO INNER_LOOP
+    // mach 1
+    10695960
