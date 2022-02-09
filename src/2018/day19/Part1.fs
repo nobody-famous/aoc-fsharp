@@ -64,10 +64,79 @@ let exec (state: U.State) =
 
         state.Mach.Registers.[state.Mach.IpReg] <- state.Mach.Registers.[state.Mach.IpReg] + 1
 
+let mach r0 =
+    let mutable a = r0
+    let mutable b = 0
+    let mutable c = 0
+    let mutable d = 0
+    let mutable e = 0
+
+    let rec loop initB initE =
+        b <- initB
+        e <- initE
+
+        c <- b * e
+        if c = d then a <- a + b
+
+        e <- e + 1
+        if e > d then
+            b <- b + 1
+            if b <= d
+                then loop b 1
+                else
+                    printfn $"LOOP {a} {b} {c} {d} {e}"
+                    a
+        else
+            loop b e
+
+    d <- (2 * 2 * 209) + (5 * 22 + 1)
+
+    if a = 0 then
+        loop 1 1
+    else
+        c <- 10550400
+        d <- d + c
+        a <- 0
+        loop 1 1
+
 let run (input: string) =
     let state = parse input
 
-    while not state.Mach.Halt do
-        exec state
+    mach 1
 
-    state.Mach.Registers.[0]
+// while not state.Mach.Halt do
+//     exec state
+
+// state.Mach.Registers.[0]
+
+// INIT
+// GOTO MAIN
+
+// INNER_LOOP
+// b = 1
+
+// INNER_LOOP_INIT_E
+// e = 1
+
+// INNER_LOOP_NO_INIT
+// c = b * e
+// if c == d
+//   a += b
+// e += 1
+// if e > d
+//   b += 1
+//   if b > d
+//     exit
+//   else GOTO_INNER_LOOP_INIT_E
+// else GOTO INNER_LOOP_NO_INIT
+
+// MAIN
+// d = (d + 2) * (d + 2) * 209
+// c = (c + 5) * 22 + 1
+// d = d + c
+// if a == 0
+//   GOTO INNER_LOOP
+// c = 10550400
+// d += c
+// a = 0
+// GOTO INNER_LOOP
