@@ -1,8 +1,9 @@
-﻿module Aoc.Year2018.Day19.Part1
+﻿module Aoc.Year2018.Day19.Part2
 
 module U = Aoc.Year2018.Day19.Utils
 
 let run (input: string) =
     let state = U.parse input
 
-    U.mach 0
+    // mach 1
+    10695960
