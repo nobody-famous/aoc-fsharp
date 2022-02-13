@@ -101,48 +101,68 @@ let parseSegment input =
 
     loop Seq.empty input
 
-let rec parseBranch input =
-    let rec loop isOpen rem =
+let rec parseBranch paths input =
+    let rec loop isOpen curPaths outPaths rem =
         match rem with
         | first :: rest ->
             match first with
             | '(' ->
                 if not isOpen then
-                    loop true rest
+                    loop true curPaths outPaths rest
                 else
-                    let (_, newRem) = parseBranch rest
-                    loop isOpen newRem
-            | ')' -> (Seq.empty, rest)
-            | '|' -> loop isOpen rest
+                    let (paths, newRem) = parseBranch curPaths rest
+
+                    loop isOpen paths outPaths newRem
+            | ')' ->
+                let newOutPaths =
+                    if Seq.isEmpty curPaths then
+                        Seq.append outPaths paths
+                    else
+                        Seq.append outPaths curPaths
+
+                (newOutPaths, rest)
+            | '|' ->
+                let newOutPaths = Seq.append outPaths curPaths
+                loop isOpen Seq.empty newOutPaths rest
             | _ ->
                 let (seg, newRem) = parseSegment rem
 
-                printfn $"SEG {segToString seg} {newRem}"
-                loop isOpen newRem
-        | _ -> (Seq.empty, rem)
+                let newCurPaths =
+                    Seq.append curPaths (Seq.map (fun s -> Seq.append s seg) paths)
 
-    loop false input
+                loop isOpen newCurPaths outPaths newRem
+        | _ -> (outPaths, rem)
+
+    loop false Seq.empty Seq.empty input
 
 let parseRegex (input: string) =
-    let rec loop depth curSeg rem =
-        printfn $"LOOP {depth} {rem}"
-
+    let rec loop paths rem =
         match rem with
         | first :: rest ->
             match first with
-            | '^' -> loop 0 Seq.empty rest
-            | '$' -> ()
+            | '^' -> loop Seq.empty rest
+            | '$' -> paths
             | 'N'
             | 'S'
             | 'E'
-            | 'W' -> loop depth (addToSegment (charToDir first) curSeg) rest
-            | '(' -> loop (depth + 1) Seq.empty rest
-            | '|' -> loop depth Seq.empty rest
-            | ')' -> loop (depth - 1) Seq.empty rest
-            | _ -> failwith $"NOT DONE {segToString curSeg} {depth} {first} {rest}"
-        | [] -> ()
+            | 'W' ->
+                let (seg, newRem) = parseSegment rem
 
-    loop 0 Seq.empty (input |> Seq.toList)
+                let newPaths =
+                    if Seq.isEmpty paths then
+                        Seq.append paths (Seq.singleton seg)
+                    else
+                        Seq.map (fun s -> Seq.append s seg) paths
+
+                loop newPaths newRem
+            | '(' ->
+                let (newPaths, newRem) = parseBranch paths rem
+
+                loop newPaths newRem
+            | _ -> failwith $"Invalid input {input}"
+        | [] -> paths
+
+    loop Seq.empty (input |> Seq.toList)
 
 let parse (input: string) =
     input.Split '\n'
@@ -151,13 +171,8 @@ let parse (input: string) =
     |> parseRegex
 
 let run (input: string) =
-    // let regex = parse input
+    let paths = parse input
 
-    // printfn $"REGEX {regex}"
-
-    let (seg, rem) = parseSegment (Seq.toList "NSEW(WESN)")
-
-    let (branch, rem) =
-        parseBranch (Seq.toList "(NSEW|NNN(EEE))")
-
-    printfn $"{segToString seg} {rem}"
+    printfn "PATHS"
+    for path in paths do
+        printfn $"  {segToString path}"
