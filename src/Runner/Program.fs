@@ -97,8 +97,8 @@ let year2018: Problem list =
 
 [<EntryPoint>]
 let main _ =
-    let allProblems: Problem list = year2018
-    // let allProblems: Problem list = [IntProblem("2018/day19/part2",Aoc.Year2018.Day19.Part2.run, 10695960)]
+    // let allProblems: Problem list = year2018
+    let allProblems: Problem list = [IntProblem("2018/day20/part1",Aoc.Year2018.Day20.Part1.run, 10695960)]
 
     let total =
         List.fold (fun total p -> total + runProblem p) 0 allProblems
