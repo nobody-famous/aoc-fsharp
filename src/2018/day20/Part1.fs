@@ -32,37 +32,41 @@ let buildGrid (input: string) =
                 newPt)
             pts
 
-    let rec walk startPts curPts rem =
+    let rec walk startPts curPts (toRet: Set<G.Point>) rem =
         match rem with
         | first :: rest ->
             match first with
-            | '^' -> walk startPts curPts rest
+            | '^' -> walk startPts curPts toRet rest
             | 'N' ->
                 let newPts = updatePts curPts 0 -1 HorizDoor
-                walk startPts newPts rest
+                walk startPts newPts toRet rest
             | 'S' ->
                 let newPts = updatePts curPts 0 1 HorizDoor
-                walk startPts newPts rest
+                walk startPts newPts toRet rest
             | 'E' ->
                 let newPts = updatePts curPts 1 0 VertDoor
-                walk startPts newPts rest
+                walk startPts newPts toRet rest
             | 'W' ->
                 let newPts = updatePts curPts -1 0 VertDoor
-                walk startPts newPts rest
+                walk startPts newPts toRet rest
             | '(' ->
-                let (newCurPts, newRem) = walk curPts curPts rest
-                walk startPts newCurPts newRem
-            | ')' -> (curPts, rest)
-            | '|' -> walk startPts startPts rest
-            | '$' -> (curPts, rest)
+                let (newCurPts, newRem) = walk curPts curPts Set.empty rest
+                walk startPts newCurPts toRet newRem
+            | ')' ->
+                let newToRet = Set.union toRet (Set.ofList curPts)
+                (Set.toList newToRet, rest)
+            | '|' ->
+                let newToRet = Set.union toRet (Set.ofList curPts)
+                walk startPts startPts newToRet rest
+            | '$' -> (Set.toList toRet, rest)
             | _ -> failwith $"Should not be here {first}"
-        | [] -> (curPts, [])
+        | [] -> (Set.toList toRet, [])
 
     let startPt = { G.X = 0; G.Y = 0 }
 
     grid.[startPt] <- Room
 
-    walk [ startPt ] [ startPt ] (input |> Seq.toList)
+    walk [ startPt ] [ startPt ] Set.empty (input |> Seq.toList)
     |> ignore
 
     grid
