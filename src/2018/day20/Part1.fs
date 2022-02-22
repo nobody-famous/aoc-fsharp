@@ -8,10 +8,6 @@ type Direction =
     | E
     | W
 
-type Node =
-    | Leaf of seq<Direction>
-    | Branch of seq<Node>
-
 type Piece =
     | Wall
     | HorizDoor
@@ -20,91 +16,7 @@ type Piece =
 
 type Grid = System.Collections.Generic.Dictionary<G.Point, Piece>
 
-let charToDir ch =
-    match ch with
-    | 'N' -> N
-    | 'S' -> S
-    | 'E' -> E
-    | 'W' -> W
-    | _ -> failwith $"charToDir: {ch}"
-
-let addToSegment dir seg = Seq.append seg (Seq.singleton dir)
-
-let segToString seg =
-    seg |> Seq.map string |> String.concat ""
-
-let parseSegment input =
-    let rec loop curSeg rem =
-        match rem with
-        | first :: rest ->
-            match first with
-            | 'N'
-            | 'S'
-            | 'E'
-            | 'W' -> loop (addToSegment (charToDir first) curSeg) rest
-            | _ -> (curSeg, rem)
-        | [] -> (curSeg, [])
-
-    loop Seq.empty input
-
-type Options =
-    | Leaf of seq<Direction>
-    | Branch of seq<Options>
-
-let rec parseBranch depth input =
-    let rec loop curBranch curOpts rem =
-        match rem with
-        | first :: rest ->
-            match first with
-            | '(' ->
-                let (subBranch, newRem) = parseBranch (depth + 1) rest
-
-                loop curBranch curOpts newRem
-            | ')' ->
-                let newOpts = Seq.append curOpts curBranch
-                (newOpts, rest)
-            | '|' ->
-                printfn $"OPTION BREAK {depth}"
-                let newOpts = Seq.append curOpts curBranch
-
-                loop Seq.empty newOpts rest
-            | _ ->
-                let (seg, newRem) = parseSegment rem
-
-                let newBranch = Seq.append curBranch (Seq.singleton seg)
-
-                printfn $"BRANCH {depth} {segToString seg}"
-                loop newBranch curOpts newRem
-        | _ -> (curOpts, rem)
-
-    loop Seq.empty Seq.empty input
-
-let parseRegex (input: string) =
-    let rec loop rem =
-        match rem with
-        | first :: rest ->
-            match first with
-            | '^' -> loop rest
-            | '$' -> ()
-            | 'N'
-            | 'S'
-            | 'E'
-            | 'W' ->
-                let (seg, newRem) = parseSegment rem
-
-                printfn $"REGEX SEG {segToString seg}"
-                loop newRem
-            | '(' ->
-                let (_, newRem) = parseBranch 1 rest
-
-                loop newRem
-            | _ -> failwith $"Invalid input {first} {rest}"
-        | [] -> ()
-
-    loop (input |> Seq.toList)
-
 let buildGrid (input: string) =
-    printfn $"BUILD GRID {input}"
     let grid = Grid()
 
     let updatePts pts dx dy door =
@@ -120,67 +32,47 @@ let buildGrid (input: string) =
                 newPt)
             pts
 
-    let rec loop pts rem =
+    let rec walk startPts curPts rem =
         match rem with
         | first :: rest ->
             match first with
+            | '^' -> walk startPts curPts rest
             | 'N' ->
-                let newPts = updatePts (List.head pts) 0 -1 HorizDoor
-                loop (newPts :: List.tail pts) rest
+                let newPts = updatePts curPts 0 -1 HorizDoor
+                walk startPts newPts rest
             | 'S' ->
-                let newPts = updatePts (List.head pts) 0 1 HorizDoor
-                loop (newPts :: List.tail pts) rest
+                let newPts = updatePts curPts 0 1 HorizDoor
+                walk startPts newPts rest
             | 'E' ->
-                let newPts = updatePts (List.head pts) 1 0 VertDoor
-                loop (newPts :: List.tail pts) rest
+                let newPts = updatePts curPts 1 0 VertDoor
+                walk startPts newPts rest
             | 'W' ->
-                let newPts = updatePts (List.head pts) -1 0 VertDoor
-                loop (newPts :: List.tail pts) rest
-            | '^' -> loop pts rest
-            |'|' ->
-                printfn $"{pts} {List.head (List.tail pts)}"
-                grid
-            | '(' -> loop ((List.head pts) :: pts) rest
-            | ')' -> loop (List.tail pts) rest
+                let newPts = updatePts curPts -1 0 VertDoor
+                walk startPts newPts rest
+            | '(' ->
+                let (newCurPts, newRem) = walk curPts curPts rest
+                walk startPts newCurPts newRem
+            | ')' -> (curPts, rest)
+            | '|' -> walk startPts startPts rest
+            | '$' -> (curPts, rest)
             | _ ->
-                printfn $"buildGrid NOT DONE {first}"
-                grid
-        | [] -> grid
+                failwith $"Should not be here {first}"
+        | [] -> (curPts, [])
 
     let startPt = { G.X = 0; G.Y = 0 }
 
     grid.[startPt] <- Room
 
-    loop [ [ startPt ] ] (input |> Seq.toList)
+    walk [ startPt ] [ startPt ] (input |> Seq.toList)
+    |> ignore
+
+    grid
 
 let parse (input: string) =
     input.Split '\n'
     |> Array.toList
     |> List.head
     |> buildGrid
-
-let walkPath path (grid: Grid) =
-    let rec loop (curPt: G.Point) rem =
-        grid.[curPt] <- Room
-
-        match rem with
-        | first :: rest ->
-            match first with
-            | N ->
-                grid.[{ curPt with G.Y = curPt.Y - 1 }] <- HorizDoor
-                loop { curPt with G.Y = curPt.Y - 2 } rest
-            | S ->
-                grid.[{ curPt with G.Y = curPt.Y + 1 }] <- HorizDoor
-                loop { curPt with G.Y = curPt.Y + 2 } rest
-            | E ->
-                grid.[{ curPt with G.X = curPt.X + 1 }] <- VertDoor
-                loop { curPt with G.X = curPt.X + 2 } rest
-            | W ->
-                grid.[{ curPt with G.X = curPt.X - 1 }] <- VertDoor
-                loop { curPt with G.X = curPt.X - 2 } rest
-        | [] -> ()
-
-    loop { G.X = 0; G.Y = 0 } (path |> Seq.toList)
 
 let printGrid (grid: Grid) =
     let (minPt, maxPt) = G.findBounds (grid.Keys |> Seq.toList)
@@ -206,11 +98,6 @@ let printGrid (grid: Grid) =
 
 let run (input: string) =
     let grid = parse input
-
-    // let grid = Grid()
-
-    // for path in paths do
-    //     walkPath path grid
 
     printGrid grid
 
