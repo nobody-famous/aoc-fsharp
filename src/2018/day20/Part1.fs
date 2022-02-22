@@ -55,8 +55,7 @@ let buildGrid (input: string) =
             | ')' -> (curPts, rest)
             | '|' -> walk startPts startPts rest
             | '$' -> (curPts, rest)
-            | _ ->
-                failwith $"Should not be here {first}"
+            | _ -> failwith $"Should not be here {first}"
         | [] -> (curPts, [])
 
     let startPt = { G.X = 0; G.Y = 0 }
@@ -80,11 +79,10 @@ let printGrid (grid: Grid) =
     for y in minPt.Y - 1 .. maxPt.Y + 1 do
         for x in minPt.X - 1 .. maxPt.X + 1 do
             let pt = { G.X = x; G.Y = y }
-            let mutable piece = Wall
 
             let value =
-                if grid.TryGetValue(pt, &piece) then
-                    piece
+                if grid.ContainsKey(pt) then
+                    grid.[pt]
                 else
                     Wall
 
