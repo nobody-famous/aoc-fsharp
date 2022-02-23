@@ -84,21 +84,22 @@ let year2018: Problem list =
       StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99")
       StringProblem("2018/day14/part1", Aoc.Year2018.Day14.Part1.run, "9276422810")
       IntProblem("2018/day14/part2", Aoc.Year2018.Day14.Part2.run, 20319117)
-      IntProblem("2018/day15/part1",Aoc.Year2018.Day15.Part1.run, 269430)
-      IntProblem("2018/day15/part2",Aoc.Year2018.Day15.Part2.run, 55160)
-      IntProblem("2018/day16/part1",Aoc.Year2018.Day16.Part1.run, 605)
-      IntProblem("2018/day16/part2",Aoc.Year2018.Day16.Part2.run, 653)
-      IntProblem("2018/day17/part1",Aoc.Year2018.Day17.Part1.run, 37649)
-      IntProblem("2018/day17/part2",Aoc.Year2018.Day17.Part2.run, 30112)
-      IntProblem("2018/day18/part1",Aoc.Year2018.Day18.Part1.run, 638400)
-      IntProblem("2018/day18/part2",Aoc.Year2018.Day18.Part2.run, 195952)
-      IntProblem("2018/day19/part1",Aoc.Year2018.Day19.Part1.run, 948)
-      IntProblem("2018/day19/part2",Aoc.Year2018.Day19.Part2.run, 10695960) ]
+      IntProblem("2018/day15/part1", Aoc.Year2018.Day15.Part1.run, 269430)
+      IntProblem("2018/day15/part2", Aoc.Year2018.Day15.Part2.run, 55160)
+      IntProblem("2018/day16/part1", Aoc.Year2018.Day16.Part1.run, 605)
+      IntProblem("2018/day16/part2", Aoc.Year2018.Day16.Part2.run, 653)
+      IntProblem("2018/day17/part1", Aoc.Year2018.Day17.Part1.run, 37649)
+      IntProblem("2018/day17/part2", Aoc.Year2018.Day17.Part2.run, 30112)
+      IntProblem("2018/day18/part1", Aoc.Year2018.Day18.Part1.run, 638400)
+      IntProblem("2018/day18/part2", Aoc.Year2018.Day18.Part2.run, 195952)
+      IntProblem("2018/day19/part1", Aoc.Year2018.Day19.Part1.run, 948)
+      IntProblem("2018/day19/part2", Aoc.Year2018.Day19.Part2.run, 10695960)
+      IntProblem("2018/day20/part1", Aoc.Year2018.Day20.Part1.run, 4432) ]
 
 [<EntryPoint>]
 let main _ =
     // let allProblems: Problem list = year2018
-    let allProblems: Problem list = [IntProblem("2018/day20/part1",Aoc.Year2018.Day20.Part1.run, 10695960)]
+    let allProblems: Problem list = [ IntProblem("2018/day20/part1", Aoc.Year2018.Day20.Part1.run, 4432) ]
 
     let total =
         List.fold (fun total p -> total + runProblem p) 0 allProblems

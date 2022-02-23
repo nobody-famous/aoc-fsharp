@@ -15,6 +15,7 @@ type Piece =
     | Room
 
 type Grid = System.Collections.Generic.Dictionary<G.Point, Piece>
+type DistMap = System.Collections.Generic.Dictionary<G.Point, int>
 
 let buildGrid (input: string) =
     let grid = Grid()
@@ -66,10 +67,52 @@ let buildGrid (input: string) =
 
     grid.[startPt] <- Room
 
-    walk [ startPt ] [ startPt ] Set.empty (input |> Seq.toList)
-    |> ignore
+    let (_, _) =
+        walk [ startPt ] [ startPt ] Set.empty (input |> Seq.toList)
 
     grid
+
+let calcDists (grid: Grid) =
+    let dists = DistMap()
+
+    let addNeighbors ptSet (pt: G.Point) =
+        let deltas = [ (0, 1); (0, -1); (1, 0); (-1, 0) ]
+
+        List.fold
+            (fun acc (dx, dy) ->
+                let newPt = { G.X = pt.X + dx; G.Y = pt.Y + dy }
+
+                let toAdd =
+                    { G.X = pt.X + (dx * 2)
+                      G.Y = pt.Y + (dy * 2) }
+
+                if not (grid.ContainsKey(newPt)) then
+                    acc
+                else
+                    match grid.[newPt] with
+                    | VertDoor
+                    | HorizDoor ->
+                        if dists.ContainsKey(toAdd) then
+                            acc
+                        else
+                            Set.add toAdd acc
+                    | _ -> acc)
+            ptSet
+            deltas
+
+    let rec loop curDist curPts =
+        if not (Set.isEmpty curPts) then
+            curPts
+            |> Set.iter (fun pt -> dists.[pt] <- curDist)
+
+            let newPts =
+                curPts
+                |> Set.fold (fun acc pt -> addNeighbors acc pt) Set.empty
+
+            loop (curDist + 1) newPts
+
+    loop 0 (Set.singleton { G.X = 0; G.Y = 0 })
+    dists
 
 let parse (input: string) =
     input.Split '\n'
@@ -99,8 +142,7 @@ let printGrid (grid: Grid) =
         printfn ""
 
 let run (input: string) =
-    let grid = parse input
-
-    printGrid grid
-
-    0
+    parse input
+    |> calcDists
+    |> Seq.map (fun kv -> kv.Value)
+    |> Seq.max
