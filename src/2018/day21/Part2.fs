@@ -125,7 +125,9 @@ let countInstrs input r0 =
 let run (input: string) =
     let state = U.parse input
 
-    countInstrs input 0
+    // countInstrs input 0
+
+    U.mach 2589
 
     // printfn $"{countInstrs input 2589}"
     // printfn $"{countInstrs input 16777107}"

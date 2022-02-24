@@ -147,3 +147,30 @@ let exec (state: State) =
         instr.Op state.Mach (instr.A, instr.B, instr.C)
 
         state.Mach.Registers.[state.Mach.IpReg] <- state.Mach.Registers.[state.Mach.IpReg] + 1
+
+let mach r0 =
+    let regs = [| r0; 0; 0; 0; 0 |]
+
+    let mutable loop6done = false
+    while not loop6done do
+        regs.[1] <- regs.[3] ||| 65536
+        regs.[3] <- 9450265
+
+        let mutable loop8done = false
+        while not loop8done do
+            regs.[4] <- regs.[1] &&& 255
+            regs.[3] <- regs.[3] + regs.[4]
+            regs.[3] <- regs.[3] &&& 16777215
+            regs.[3] <- regs.[3] * 65899
+            regs.[3] <- regs.[3] &&& 16777215
+
+            if 256 <= regs.[1] then
+                regs.[4] <- 0
+
+                regs.[1] <- regs.[1] / 256
+            else
+                loop8done <- true
+                if regs.[3] = regs.[0] then
+                    printfn $"HERE {regs.[3]}"
+                    loop6done <- true
+    regs.[3]
