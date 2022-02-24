@@ -2,6 +2,10 @@ module Aoc.Year2018.Day21.Utils
 
 module S = Aoc.Utils.String
 
+type Result =
+    | Min
+    | Max
+
 type Device =
     { Registers: int array
       mutable IpReg: int
@@ -148,15 +152,22 @@ let exec (state: State) =
 
         state.Mach.Registers.[state.Mach.IpReg] <- state.Mach.Registers.[state.Mach.IpReg] + 1
 
-let mach r0 =
-    let regs = [| r0; 0; 0; 0; 0 |]
+let mach result =
+    let regs = [| 0; 0; 0; 0; 0 |]
+
+    let mutable prev = 0
+
+    let seen =
+        System.Collections.Generic.HashSet<int>()
 
     let mutable loop6done = false
+
     while not loop6done do
         regs.[1] <- regs.[3] ||| 65536
         regs.[3] <- 9450265
 
         let mutable loop8done = false
+
         while not loop8done do
             regs.[4] <- regs.[1] &&& 255
             regs.[3] <- regs.[3] + regs.[4]
@@ -170,7 +181,15 @@ let mach r0 =
                 regs.[1] <- regs.[1] / 256
             else
                 loop8done <- true
-                if regs.[3] = regs.[0] then
-                    printfn $"HERE {regs.[3]}"
-                    loop6done <- true
+
+                match result with
+                | Min -> loop6done <- true
+                | Max ->
+                    if seen.Contains(regs.[3]) then
+                        regs.[3] <- prev
+                        loop6done <- true
+
+                    prev <- regs.[3]
+                    seen.Add(regs.[3]) |> ignore
+
     regs.[3]
