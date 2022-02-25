@@ -17,6 +17,70 @@ type Grid = System.Collections.Generic.Dictionary<G.Point, Region>
 
 type Config = { Depth: int; Target: G.Point }
 
+let geoToErosion depth geoNdx = (depth + geoNdx) % 20183
+
+let calcGeoNdx (cfg: Config) (grid: Grid) (pt: G.Point) =
+    if pt.X = 0 && pt.Y = 0
+       || pt.X = cfg.Target.X && pt.Y = cfg.Target.Y then
+        0
+    else if pt.Y = 0 then
+        pt.X * 16807
+    else if pt.X = 0 then
+        pt.Y * 48271
+    else
+        let left = grid.[{ pt with G.X = pt.X - 1 }]
+        let above = grid.[{ pt with G.Y = pt.Y - 1 }]
+
+        left.Erosion * above.Erosion
+
+
+let calcRegion (cfg: Config) (grid: Grid) (pt: G.Point) =
+    let geoNdx = calcGeoNdx cfg grid pt
+    let level = (geoNdx + cfg.Depth) % 20183
+
+    let regType =
+        match level % 3 with
+        | 0 -> Rocky
+        | 1 -> Wet
+        | 2 -> Narrow
+        | _ -> failwith "Should not be here"
+
+    { Type = regType
+      Erosion = level
+      GeoIndex = geoNdx }
+
+let riskLevel (grid: Grid) =
+    grid.Values
+    |> Seq.sumBy (fun r ->
+        match r.Type with
+        | Rocky -> 0
+        | Wet -> 1
+        | Narrow -> 2)
+
+let buildGrid (cfg: Config) =
+    let grid = Grid()
+
+    for y in 0 .. cfg.Target.Y do
+        for x in 0 .. cfg.Target.X do
+            let pt = { G.X = x; G.Y = y }
+            grid.[pt] <- calcRegion cfg grid pt
+
+    grid
+
+let printGrid (grid: Grid) =
+    let (minPt, maxPt) = G.findBounds (grid.Keys |> Seq.toList)
+
+    for y in minPt.Y .. maxPt.Y do
+        for x in minPt.X .. maxPt.X do
+            let pt = { G.X = x; G.Y = y }
+
+            match grid.[pt].Type with
+            | Rocky -> printf "."
+            | Wet -> printf "="
+            | Narrow -> printf "|"
+
+        printfn ""
+
 let parse (input: string) =
     let parseDepth (line: string) =
         let parts = line.Split ':'
@@ -37,7 +101,4 @@ let parse (input: string) =
       Target = parseTarget lines.[1] }
 
 let run (input: string) =
-    let cfg = parse input
-
-    printfn $"{cfg}"
-    0
+    parse input |> buildGrid |> riskLevel
