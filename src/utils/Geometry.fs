@@ -3,6 +3,9 @@
 [<Struct>]
 type Point = { X: int; Y: int }
 
+[<Struct>]
+type Point3d = { X3: int; Y3: int; Z3: int }
+
 let smallerPt pt1 pt2 =
     { X = min pt1.X pt2.X
       Y = min pt1.Y pt2.Y }
