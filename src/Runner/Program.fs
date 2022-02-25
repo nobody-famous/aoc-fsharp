@@ -97,12 +97,14 @@ let year2018: Problem list =
       IntProblem("2018/day20/part1", Aoc.Year2018.Day20.Part1.run, 4432)
       IntProblem("2018/day20/part2", Aoc.Year2018.Day20.Part2.run, 8681)
       IntProblem("2018/day21/part1", Aoc.Year2018.Day21.Part1.run, 986758)
-      IntProblem("2018/day21/part2", Aoc.Year2018.Day21.Part2.run, 16016565) ]
+      IntProblem("2018/day21/part2", Aoc.Year2018.Day21.Part2.run, 16016565)
+      IntProblem("2018/day22/part1", Aoc.Year2018.Day22.Part1.run, 11810)
+      IntProblem("2018/day22/part2", Aoc.Year2018.Day22.Part2.run, 1015) ]
 
 [<EntryPoint>]
 let main _ =
     let allProblems: Problem list = year2018
-    // let allProblems: Problem list = [ IntProblem("2018/day21/part2", Aoc.Year2018.Day21.Part2.run, 16016565) ]
+    // let allProblems: Problem list = [ IntProblem("2018/day22/part2", Aoc.Year2018.Day22.Part2.run, 1015) ]
 
     let total =
         List.fold (fun total p -> total + runProblem p) 0 allProblems
