@@ -1,104 +1,14 @@
 ﻿module Aoc.Year2018.Day22.Part1
 
-module G = Aoc.Utils.Geometry
-module S = Aoc.Utils.String
+module U = Aoc.Year2018.Day22.Utils
 
-type RegionType =
-    | Rocky
-    | Narrow
-    | Wet
-
-type Region =
-    { Type: RegionType
-      Erosion: int
-      GeoIndex: int }
-
-type Grid = System.Collections.Generic.Dictionary<G.Point, Region>
-
-type Config = { Depth: int; Target: G.Point }
-
-let geoToErosion depth geoNdx = (depth + geoNdx) % 20183
-
-let calcGeoNdx (cfg: Config) (grid: Grid) (pt: G.Point) =
-    if pt.X = 0 && pt.Y = 0
-       || pt.X = cfg.Target.X && pt.Y = cfg.Target.Y then
-        0
-    else if pt.Y = 0 then
-        pt.X * 16807
-    else if pt.X = 0 then
-        pt.Y * 48271
-    else
-        let left = grid.[{ pt with G.X = pt.X - 1 }]
-        let above = grid.[{ pt with G.Y = pt.Y - 1 }]
-
-        left.Erosion * above.Erosion
-
-
-let calcRegion (cfg: Config) (grid: Grid) (pt: G.Point) =
-    let geoNdx = calcGeoNdx cfg grid pt
-    let level = (geoNdx + cfg.Depth) % 20183
-
-    let regType =
-        match level % 3 with
-        | 0 -> Rocky
-        | 1 -> Wet
-        | 2 -> Narrow
-        | _ -> failwith "Should not be here"
-
-    { Type = regType
-      Erosion = level
-      GeoIndex = geoNdx }
-
-let riskLevel (grid: Grid) =
+let riskLevel (grid: U.Grid) =
     grid.Values
     |> Seq.sumBy (fun r ->
         match r.Type with
-        | Rocky -> 0
-        | Wet -> 1
-        | Narrow -> 2)
-
-let buildGrid (cfg: Config) =
-    let grid = Grid()
-
-    for y in 0 .. cfg.Target.Y do
-        for x in 0 .. cfg.Target.X do
-            let pt = { G.X = x; G.Y = y }
-            grid.[pt] <- calcRegion cfg grid pt
-
-    grid
-
-let printGrid (grid: Grid) =
-    let (minPt, maxPt) = G.findBounds (grid.Keys |> Seq.toList)
-
-    for y in minPt.Y .. maxPt.Y do
-        for x in minPt.X .. maxPt.X do
-            let pt = { G.X = x; G.Y = y }
-
-            match grid.[pt].Type with
-            | Rocky -> printf "."
-            | Wet -> printf "="
-            | Narrow -> printf "|"
-
-        printfn ""
-
-let parse (input: string) =
-    let parseDepth (line: string) =
-        let parts = line.Split ':'
-
-        parts.[1].Trim() |> int
-
-    let parseTarget (line: string) =
-        let parts = line.Split ':'
-        let ptParts = parts.[1].Split ','
-
-        { G.X = ptParts.[0].Trim() |> int
-          G.Y = ptParts.[1].Trim() |> int }
-
-    let lines =
-        input.Split '\n' |> S.trimIndent |> Array.toList
-
-    { Depth = parseDepth lines.[0]
-      Target = parseTarget lines.[1] }
+        | U.Rocky -> 0
+        | U.Wet -> 1
+        | U.Narrow -> 2)
 
 let run (input: string) =
-    parse input |> buildGrid |> riskLevel
+    U.parse input |> U.buildGrid |> riskLevel
