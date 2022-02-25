@@ -86,16 +86,17 @@ let getMoves (grid: U.Grid) (state: State) =
               { Target = { state with Tool = Climbing }
                 Weight = 7 } ]
 
-    List.append
-        opts
-        (toolOpts
-         |> List.filter (fun m -> canSwitch grid state m.Target.Tool))
+    List.concat [ opts
+                  (toolOpts
+                   |> List.filter (fun m -> canSwitch grid state m.Target.Tool)) ]
 
 let findPath (cfg: U.Config) (grid: U.Grid) =
     let pq = Queue()
 
     let seen =
         System.Collections.Generic.HashSet<State>()
+
+    let endState = { Pos = cfg.Target; Tool = Torch }
 
     let dequeue (q: Queue) =
         let mutable state = startState
@@ -106,28 +107,31 @@ let findPath (cfg: U.Config) (grid: U.Grid) =
 
     pq.Enqueue(startState, 0)
 
-    while pq.Count > 0 do
+    let rec loop () =
         let (state, dist) = dequeue pq
-        let moves = getMoves grid state
 
-        seen.Add(state) |> ignore
+        if state = endState then
+            dist
+        else if seen.Contains(state) then
+            loop ()
+        else
+            let moves =
+                getMoves grid state
+                |> List.filter (fun m -> not (seen.Contains(m.Target)))
 
-        moves
-        |> List.iter (fun m ->
-            if not (seen.Contains(m.Target)) then
-                pq.Enqueue(m.Target, m.Weight + dist))
+            if not (seen.Add(state)) then
+                failwith "Failed to add state to seen"
 
-    0
+            moves
+            |> List.iter (fun m -> pq.Enqueue(m.Target, m.Weight + dist))
+
+            loop ()
+
+    loop ()
 
 let run (input: string) =
     let cfg = U.parse input
+
     let grid = U.buildGrid cfg
 
-    U.printGrid grid
-
     findPath cfg grid
-
-// let ops = moves grid startState
-
-// for op in ops do
-//     printfn $"{op.Weight} -> {op.Target.Pos.X},{op.Target.Pos.Y} ({op.Target.Tool})"

@@ -43,7 +43,7 @@ let calcRegion (cfg: Config) (grid: Grid) (pt: G.Point) =
         | 0 -> Rocky
         | 1 -> Wet
         | 2 -> Narrow
-        | _ -> failwith "Should not be here"
+        | n -> failwith $"Should not be here {n}"
 
     { Type = regType
       Erosion = level
@@ -52,24 +52,27 @@ let calcRegion (cfg: Config) (grid: Grid) (pt: G.Point) =
 let buildGrid (cfg: Config) =
     let grid = Grid()
 
-    for y in 0 .. cfg.Target.Y do
-        for x in 0 .. cfg.Target.X do
+    for y in 0 .. 800 do
+        for x in 0 .. 800 do
             let pt = { G.X = x; G.Y = y }
             grid.[pt] <- calcRegion cfg grid pt
 
     grid
 
-let printGrid (grid: Grid) =
+let printGrid (grid: Grid) (target: G.Point) =
     let (minPt, maxPt) = G.findBounds (grid.Keys |> Seq.toList)
 
     for y in minPt.Y .. maxPt.Y do
         for x in minPt.X .. maxPt.X do
             let pt = { G.X = x; G.Y = y }
 
-            match grid.[pt].Type with
-            | Rocky -> printf "."
-            | Wet -> printf "="
-            | Narrow -> printf "|"
+            if pt = target then
+                printf "T"
+            else
+                match grid.[pt].Type with
+                | Rocky -> printf "."
+                | Wet -> printf "="
+                | Narrow -> printf "|"
 
         printfn ""
 
