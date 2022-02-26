@@ -15,9 +15,23 @@ let sample =
     pos=<1,3,1>, r=1
     """
 
+let sample2 =
+    """
+    pos=<10,12,12>, r=2
+    pos=<12,14,12>, r=2
+    pos=<16,12,12>, r=4
+    pos=<14,14,14>, r=6
+    pos=<50,50,50>, r=200
+    pos=<10,10,10>, r=5
+    """
+
 [<Test>]
 let Part1 () =
     Assert.AreEqual(7, Aoc.Year2018.Day23.Part1.run sample)
+
+[<Test>]
+let Part2 () =
+    Assert.AreEqual(36, Aoc.Year2018.Day23.Part2.run sample2)
 
 [<EntryPoint>]
 let main _ = 0
