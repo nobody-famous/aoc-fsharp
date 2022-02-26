@@ -3,6 +3,13 @@
 [<Struct>]
 type Point = { X: int; Y: int }
 
+[<Struct>]
+type Point3d = { X3: int; Y3: int; Z3: int }
+
+let origin = { X = 0; Y = 0 }
+
+let origin3d = { X3 = 0; Y3 = 0; Z3 = 0 }
+
 let smallerPt pt1 pt2 =
     { X = min pt1.X pt2.X
       Y = min pt1.Y pt2.Y }
@@ -32,3 +39,8 @@ let findTupleBounds (pts: (int * int) list) =
 
 let manDist pt1 pt2 =
     abs (pt1.X - pt2.X) + abs (pt1.Y - pt2.Y)
+
+let manDist3d pt1 pt2 =
+    abs (pt1.X3 - pt2.X3)
+    + abs (pt1.Y3 - pt2.Y3)
+    + abs (pt1.Z3 - pt2.Z3)
