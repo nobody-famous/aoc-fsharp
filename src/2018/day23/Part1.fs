@@ -9,7 +9,7 @@ type Regex = System.Text.RegularExpressions.Regex
 
 let parseLine (line: string) =
     let rx =
-        Regex(@"pos=<(\d+),(\d+),(\d+)>, r=(\d+)")
+        Regex(@"pos=<(-?\d+),(-?\d+),(-?\d+)>, r=(\d+)")
 
     let matches = rx.Matches(line)
 
@@ -34,5 +34,13 @@ let parse (input: string) =
 let run (input: string) =
     let bots = parse input
 
-    printfn $"{bots}"
-    0
+    let largest =
+        bots |> List.maxBy (fun bot -> bot.Radius)
+
+    let inRange =
+        bots
+        |> List.filter (fun bot ->
+            (G.manDist3d bot.Pos largest.Pos)
+            <= largest.Radius)
+
+    List.length inRange

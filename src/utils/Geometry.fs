@@ -35,3 +35,8 @@ let findTupleBounds (pts: (int * int) list) =
 
 let manDist pt1 pt2 =
     abs (pt1.X - pt2.X) + abs (pt1.Y - pt2.Y)
+
+let manDist3d pt1 pt2 =
+    abs (pt1.X3 - pt2.X3)
+    + abs (pt1.Y3 - pt2.Y3)
+    + abs (pt1.Z3 - pt2.Z3)
