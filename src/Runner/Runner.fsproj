@@ -23,6 +23,7 @@
     <ProjectReference Include="..\2018\day21\day21.fsproj" />
     <ProjectReference Include="..\2018\day22\day22.fsproj" />
     <ProjectReference Include="..\2018\day23\day23.fsproj" />
+    <ProjectReference Include="..\2018\day24\day24.fsproj" />
   </ItemGroup>
 
 </Project>
