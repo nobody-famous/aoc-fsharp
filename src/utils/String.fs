@@ -7,9 +7,22 @@ let trimIndent (input: string array) : string array =
 
     let stripIndent (input: string array) : string array =
         let indent =
-            Array.fold (fun acc str -> min acc (strIndent str).Length) System.Int32.MaxValue input
+            Array.fold
+                (fun acc (str: string) ->
+                    if str.Length = 0 then
+                        acc
+                    else
+                        min acc (strIndent str).Length)
+                System.Int32.MaxValue
+                input
 
-        Array.map (fun (str: string) -> str.Substring indent) input
+        Array.map
+            (fun (str: string) ->
+                if str.Length > indent then
+                    str.Substring indent
+                else
+                    str)
+            input
 
     let findEnds (input: string array) : int * int =
         let mutable startNdx = 0
