@@ -1,3 +1,5 @@
 {
-    "FSharp.linter": false
+    "FSharp.linter": false,
+    "FSharp.inlayHints.parameterNames": false,
+    "FSharp.inlayHints.typeAnnotations": false
 }
