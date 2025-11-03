@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Types.fs" />
     <Compile Include="Geometry.fs" />
     <Compile Include="String.fs" />
+    <Compile Include="Types.fs" />
   </ItemGroup>
 
 </Project>

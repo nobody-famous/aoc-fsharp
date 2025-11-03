@@ -4,11 +4,15 @@
 type Point = { X: int; Y: int }
 
 [<Struct>]
-type Point3d = { X3: int; Y3: int; Z3: int }
+type Point3d = { X: int; Y: int; Z: int }
+
+let makePoint x y = { X = x; Y = y }
+
+let makePoint3d x y z = { X = x; Y = y; Z = z }
 
 let origin = { X = 0; Y = 0 }
 
-let origin3d = { X3 = 0; Y3 = 0; Z3 = 0 }
+let origin3d = { X = 0; Y = 0; Z = 0 }
 
 let smallerPt pt1 pt2 =
     { X = min pt1.X pt2.X
@@ -41,6 +45,6 @@ let manDist pt1 pt2 =
     abs (pt1.X - pt2.X) + abs (pt1.Y - pt2.Y)
 
 let manDist3d pt1 pt2 =
-    abs (pt1.X3 - pt2.X3)
-    + abs (pt1.Y3 - pt2.Y3)
-    + abs (pt1.Z3 - pt2.Z3)
+    abs (pt1.X - pt2.X)
+    + abs (pt1.Y - pt2.Y)
+    + abs (pt1.Z - pt2.Z)
