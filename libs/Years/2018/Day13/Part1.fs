@@ -9,5 +9,5 @@ let rec runTicks (state: Utils.State) =
 
 let getAnswer (crash: G.Point) = $"{crash.X},{crash.Y}"
 
-let run (input: string) =
+let run (input: string list) =
     Utils.parse input |> runTicks |> getAnswer

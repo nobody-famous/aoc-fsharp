@@ -80,7 +80,7 @@ let charToTrack ch =
     | _ -> failwith $"Invalid char -{ch}-"
 
 let printGrid state =
-    let (minPt, maxPt) =
+    let minPt, maxPt =
         state.Grid.Keys |> Seq.toList |> G.findBounds
 
     let pieceToChar piece =
@@ -157,7 +157,7 @@ let buildState (lines: string list) =
 
         match lines with
         | [] -> ()
-        | (next: string) :: rest ->
+        | next: string :: rest ->
             for x in 0 .. next.Length - 1 do
                 let loc: G.Point = { X = x; Y = y }
 
@@ -181,11 +181,8 @@ let buildState (lines: string list) =
     parseLines lines 0
     state
 
-let parse (input: string) =
-    input.Split '\n'
-    |> S.trimIndent
-    |> Array.toList
-    |> buildState
+let parse (input: string list) =
+    buildState input
 
 let move (state: State) (cart: Cart) =
     let mutable newLoc = cart.Loc
@@ -226,24 +223,24 @@ let move (state: State) (cart: Cart) =
         | Intersect ->
             match cart.NextTurn with
             | Left ->
-                (newTurn <- Straight
+                newTurn <- Straight
 
-                 match cart.Dir with
-                 | T.North -> T.West
-                 | T.South -> T.East
-                 | T.East -> T.North
-                 | T.West -> T.South)
+                match cart.Dir with
+                | T.North -> T.West
+                | T.South -> T.East
+                | T.East -> T.North
+                | T.West -> T.South
             | Right ->
-                (newTurn <- Left
+                newTurn <- Left
 
-                 match cart.Dir with
-                 | T.North -> T.East
-                 | T.South -> T.West
-                 | T.East -> T.South
-                 | T.West -> T.North)
+                match cart.Dir with
+                | T.North -> T.East
+                | T.South -> T.West
+                | T.East -> T.South
+                | T.West -> T.North
             | Straight ->
-                (newTurn <- Right
-                 cart.Dir)
+                newTurn <- Right
+                cart.Dir
         | _ -> failwith $"Unhandled grid location {newLoc}"
 
     { cart with

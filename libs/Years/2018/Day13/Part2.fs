@@ -14,5 +14,5 @@ let getAnswer (state: Utils.State) =
     |> Seq.head
     |> toString
 
-let run (input: string) =
+let run (input: string list) =
     Utils.parse input |> runTicks |> getAnswer
