@@ -7,6 +7,10 @@ let problems: Problem list =
       //   IntProblem("2018/day1/part1", Aoc.Year2018.Day1.Part1.run, 437)
       //   IntProblem("2018/day1/part2", Aoc.Year2018.Day1.Part2.run, 655)
       StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
+      StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99")
+      StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
+      StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99")
+      StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
       StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99") ]
 
 let getInputFile path p =
@@ -38,6 +42,10 @@ let path =
         "UNKNOWN_PATH"
 
 let total =
-    List.fold (fun total p -> total + runProblem path p) 0L problems
+    problems
+    |> List.map (fun p -> System.Threading.Tasks.Task.Run(fun () -> runProblem path p))
+    |> System.Threading.Tasks.Task.WhenAll
+    |> (fun task -> task.Result)
+    |> Array.sum
 
 printfn $"Total {total} ms"
