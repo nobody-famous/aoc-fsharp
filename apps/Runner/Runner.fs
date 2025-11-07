@@ -7,31 +7,7 @@ let problems: Problem list =
       //   IntProblem("2018/day1/part1", Aoc.Year2018.Day1.Part1.run, 437)
       //   IntProblem("2018/day1/part2", Aoc.Year2018.Day1.Part2.run, 655)
       StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
-      StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99")
-      StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
-      StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99")
-      StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
       StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99") ]
-
-let getInputFile path p =
-    let label =
-        match p with
-        | IntProblem (label, _, _) -> label
-        | LongProblem (label, _, _) -> label
-        | StringProblem (label, _, _) -> label
-
-    let ndx = label.LastIndexOf('/')
-    $"{path}/input/{label.[0..ndx]}puzzle.txt"
-
-let runProblem path p =
-    p
-    |> getInputFile path
-    |> System.IO.File.ReadAllText
-    |> fun s -> s.Split '\n'
-    |> S.trimIndent
-    |> Array.toList
-    |> run p
-
 
 let args = System.Environment.GetCommandLineArgs()
 
@@ -41,9 +17,18 @@ let path =
     else
         "UNKNOWN_PATH"
 
+let private mutex = obj ()
+
+let printString s = lock mutex (fun () -> printfn $"{s}")
+
+
 let total =
     problems
-    |> List.map (fun p -> System.Threading.Tasks.Task.Run(fun () -> runProblem path p))
+    |> List.map (fun p ->
+        System.Threading.Tasks.Task.Run (fun () ->
+            let msg, ms = runProblem path p
+            printString msg
+            ms))
     |> System.Threading.Tasks.Task.WhenAll
     |> (fun task -> task.Result)
     |> Array.sum
