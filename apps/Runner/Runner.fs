@@ -12,7 +12,9 @@ let problems: Problem list =
       StringProblem("2018/day14/part1", Aoc.Year2018.Day14.Part1.run, "9276422810")
       IntProblem("2018/day14/part2", Aoc.Year2018.Day14.Part2.run, 20319117)
       IntProblem("2018/day15/part1", Aoc.Year2018.Day15.Part1.run, 269430)
-      IntProblem("2018/day15/part2", Aoc.Year2018.Day15.Part2.run, 55160) ]
+      IntProblem("2018/day15/part2", Aoc.Year2018.Day15.Part2.run, 55160)
+      IntProblem("2018/day16/part1", Aoc.Year2018.Day16.Part1.run, 605)
+      IntProblem("2018/day16/part2", Aoc.Year2018.Day16.Part2.run, 653) ]
 
 let args = System.Environment.GetCommandLineArgs()
 
@@ -25,7 +27,6 @@ let path =
 let private mutex = obj ()
 
 let printString s = lock mutex (fun () -> printfn $"{s}")
-
 
 let total =
     problems
