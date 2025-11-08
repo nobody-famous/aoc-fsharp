@@ -10,7 +10,9 @@ let problems: Problem list =
       StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
       StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99")
       StringProblem("2018/day14/part1", Aoc.Year2018.Day14.Part1.run, "9276422810")
-      IntProblem("2018/day14/part2", Aoc.Year2018.Day14.Part2.run, 20319117) ]
+      IntProblem("2018/day14/part2", Aoc.Year2018.Day14.Part2.run, 20319117)
+      IntProblem("2018/day15/part1", Aoc.Year2018.Day15.Part1.run, 269430)
+      IntProblem("2018/day15/part2", Aoc.Year2018.Day15.Part2.run, 55160) ]
 
 let args = System.Environment.GetCommandLineArgs()
 
