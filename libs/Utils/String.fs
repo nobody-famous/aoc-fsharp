@@ -21,7 +21,7 @@ let trimIndent (input: string array) : string array =
         while input.[endNdx].Trim().Length = 0 do
             endNdx <- endNdx - 1
 
-        (startNdx, endNdx)
+        startNdx, endNdx
 
     let cutEnds (input: string array) startNdx endNdx : string array =
         Array.sub input startNdx (endNdx - startNdx + 1)

@@ -14,11 +14,11 @@ let origin = { X = 0; Y = 0 }
 
 let origin3d = { X = 0; Y = 0; Z = 0 }
 
-let smallerPt pt1 pt2 =
+let smallerPt (pt1: Point) (pt2: Point) =
     { X = min pt1.X pt2.X
       Y = min pt1.Y pt2.Y }
 
-let biggerPt pt1 pt2 =
+let biggerPt (pt1: Point) (pt2: Point) =
     { X = max pt1.X pt2.X
       Y = max pt1.Y pt2.Y }
 
