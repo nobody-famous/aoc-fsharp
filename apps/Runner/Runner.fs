@@ -3,13 +3,14 @@
 module S = Aoc.Utils.String
 
 let problems: Problem list =
-    [
-      IntProblem("2018/day1/part1", Aoc.Year2018.Day1.Part1.run, 437)
+    [ IntProblem("2018/day1/part1", Aoc.Year2018.Day1.Part1.run, 437)
       IntProblem("2018/day1/part2", Aoc.Year2018.Day1.Part2.run, 655)
       LongProblem("2018/day9/part1", Aoc.Year2018.Day9.Part1.run, 382055)
       LongProblem("2018/day9/part2", Aoc.Year2018.Day9.Part2.run, 3133277384L)
       StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
-      StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99") ]
+      StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99")
+      StringProblem("2018/day14/part1", Aoc.Year2018.Day14.Part1.run, "9276422810")
+      IntProblem("2018/day14/part2", Aoc.Year2018.Day14.Part2.run, 20319117) ]
 
 let args = System.Environment.GetCommandLineArgs()
 
