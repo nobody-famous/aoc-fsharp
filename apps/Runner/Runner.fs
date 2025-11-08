@@ -16,7 +16,9 @@ let problems: Problem list =
       IntProblem("2018/day16/part1", Aoc.Year2018.Day16.Part1.run, 605)
       IntProblem("2018/day16/part2", Aoc.Year2018.Day16.Part2.run, 653)
       IntProblem("2018/day17/part1", Aoc.Year2018.Day17.Part1.run, 37649)
-      IntProblem("2018/day17/part2", Aoc.Year2018.Day17.Part2.run, 30112) ]
+      IntProblem("2018/day17/part2", Aoc.Year2018.Day17.Part2.run, 30112)
+      IntProblem("2018/day18/part1", Aoc.Year2018.Day18.Part1.run, 638400)
+      IntProblem("2018/day18/part2", Aoc.Year2018.Day18.Part2.run, 195952) ]
 
 let args = System.Environment.GetCommandLineArgs()
 
