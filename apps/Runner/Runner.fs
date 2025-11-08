@@ -4,8 +4,8 @@ module S = Aoc.Utils.String
 
 let problems: Problem list =
     [
-      //   IntProblem("2018/day1/part1", Aoc.Year2018.Day1.Part1.run, 437)
-      //   IntProblem("2018/day1/part2", Aoc.Year2018.Day1.Part2.run, 655)
+      IntProblem("2018/day1/part1", Aoc.Year2018.Day1.Part1.run, 437)
+      IntProblem("2018/day1/part2", Aoc.Year2018.Day1.Part2.run, 655)
       StringProblem("2018/day13/part1", Aoc.Year2018.Day13.Part1.run, "80,100")
       StringProblem("2018/day13/part2", Aoc.Year2018.Day13.Part2.run, "16,99") ]
 
