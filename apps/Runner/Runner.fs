@@ -20,7 +20,9 @@ let problems: Problem list =
       IntProblem("2018/day18/part1", Aoc.Year2018.Day18.Part1.run, 638400)
       IntProblem("2018/day18/part2", Aoc.Year2018.Day18.Part2.run, 195952)
       IntProblem("2018/day19/part1", Aoc.Year2018.Day19.Part1.run, 948)
-      IntProblem("2018/day19/part2", Aoc.Year2018.Day19.Part2.run, 10695960) ]
+      IntProblem("2018/day19/part2", Aoc.Year2018.Day19.Part2.run, 10695960)
+      IntProblem("2018/day20/part1", Aoc.Year2018.Day20.Part1.run, 4432)
+      IntProblem("2018/day20/part2", Aoc.Year2018.Day20.Part2.run, 8681) ]
 
 let args = System.Environment.GetCommandLineArgs()
 
@@ -30,19 +32,14 @@ let path =
     else
         "UNKNOWN_PATH"
 
-let private mutex = obj ()
-
-let printString s = lock mutex (fun () -> printfn $"{s}")
+let printString s = printfn $"{s}"
 
 let total =
     problems
     |> List.map (fun p ->
-        System.Threading.Tasks.Task.Run (fun () ->
-            let msg, ms = runProblem path p
-            printString msg
-            ms))
-    |> System.Threading.Tasks.Task.WhenAll
-    |> (fun task -> task.Result)
-    |> Array.sum
+        let msg, ms = runProblem path p
+        printString msg
+        ms)
+    |> List.sum
 
 printfn $"Total {total} ms"
