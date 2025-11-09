@@ -35,8 +35,7 @@ let timeFn fn input =
 
     result, watch.ElapsedMilliseconds
 
-let reportResult label status ms =
-    $"{label} [{status}] {ms} ms", ms
+let reportResult label status ms = $"{label} [{status}] {ms} ms", ms
 
 let run problem input =
     match problem with

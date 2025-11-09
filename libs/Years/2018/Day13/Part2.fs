@@ -10,9 +10,7 @@ let rec runTicks (state: Utils.State) =
 let getAnswer (state: Utils.State) =
     let toString (cart: Utils.Cart) = $"{cart.Loc.X},{cart.Loc.Y}"
 
-    state.Carts.Values
-    |> Seq.head
-    |> toString
+    state.Carts.Values |> Seq.head |> toString
 
 let run (input: string list) =
     Utils.parse input |> runTicks |> getAnswer

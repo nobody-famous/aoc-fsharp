@@ -181,8 +181,7 @@ let buildState (lines: string list) =
     parseLines lines 0
     state
 
-let parse (input: string list) =
-    buildState input
+let parse (input: string list) = buildState input
 
 let move (state: State) (cart: Cart) =
     let mutable newLoc = cart.Loc

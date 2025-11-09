@@ -24,8 +24,8 @@ let buildGrid (input: string) =
         List.map
             (fun (pt: G.Point) ->
                 let newPt =
-                    { G.X = pt.X + (dx * 2)
-                      G.Y = pt.Y + (dy * 2) }
+                    { G.X = pt.X + dx * 2
+                      G.Y = pt.Y + dy * 2 }
 
                 grid.[{ G.X = pt.X + dx; G.Y = pt.Y + dy }] <- door
                 grid.[newPt] <- Room
@@ -51,23 +51,23 @@ let buildGrid (input: string) =
                 let newPts = updatePts curPts -1 0 VertDoor
                 walk startPts newPts toRet rest
             | '(' ->
-                let (newCurPts, newRem) = walk curPts curPts Set.empty rest
+                let newCurPts, newRem = walk curPts curPts Set.empty rest
                 walk startPts newCurPts toRet newRem
             | ')' ->
                 let newToRet = Set.union toRet (Set.ofList curPts)
-                (Set.toList newToRet, rest)
+                Set.toList newToRet, rest
             | '|' ->
                 let newToRet = Set.union toRet (Set.ofList curPts)
                 walk startPts startPts newToRet rest
-            | '$' -> (Set.toList toRet, rest)
+            | '$' -> Set.toList toRet, rest
             | _ -> failwith $"Should not be here {first}"
-        | [] -> (Set.toList toRet, [])
+        | [] -> Set.toList toRet, []
 
     let startPt = { G.X = 0; G.Y = 0 }
 
     grid.[startPt] <- Room
 
-    let (_, _) =
+    let _, _ =
         walk [ startPt ] [ startPt ] Set.empty (input |> Seq.toList)
 
     grid
@@ -76,23 +76,23 @@ let calcDists (grid: Grid) =
     let dists = DistMap()
 
     let addNeighbors ptSet (pt: G.Point) =
-        let deltas = [ (0, 1); (0, -1); (1, 0); (-1, 0) ]
+        let deltas = [ 0, 1; 0, -1; 1, 0; -1, 0 ]
 
         List.fold
             (fun acc (dx, dy) ->
                 let newPt = { G.X = pt.X + dx; G.Y = pt.Y + dy }
 
                 let toAdd =
-                    { G.X = pt.X + (dx * 2)
-                      G.Y = pt.Y + (dy * 2) }
+                    { G.X = pt.X + dx * 2
+                      G.Y = pt.Y + dy * 2 }
 
-                if not (grid.ContainsKey(newPt)) then
+                if not (grid.ContainsKey newPt) then
                     acc
                 else
                     match grid.[newPt] with
                     | VertDoor
                     | HorizDoor ->
-                        if dists.ContainsKey(toAdd) then
+                        if dists.ContainsKey toAdd then
                             acc
                         else
                             Set.add toAdd acc
@@ -114,13 +114,10 @@ let calcDists (grid: Grid) =
     loop 0 (Set.singleton { G.X = 0; G.Y = 0 })
     dists
 
-let parse (input: string list) =
-    input
-    |> List.head
-    |> buildGrid
+let parse (input: string list) = input |> List.head |> buildGrid
 
 let printGrid (grid: Grid) =
-    let (minPt, maxPt) = G.findBounds (grid.Keys |> Seq.toList)
+    let minPt, maxPt = G.findBounds (grid.Keys |> Seq.toList)
 
     for y in minPt.Y - 1 .. maxPt.Y + 1 do
         for x in minPt.X - 1 .. maxPt.X + 1 do
@@ -139,4 +136,3 @@ let printGrid (grid: Grid) =
             | Room -> printf " "
 
         printfn ""
-
