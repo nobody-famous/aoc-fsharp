@@ -43,6 +43,9 @@
     <Compile Include="Day22\Utils.fs" />
     <Compile Include="Day22\Part1.fs" />
     <Compile Include="Day22\Part2.fs" />
+    <Compile Include="Day23\Utils.fs" />
+    <Compile Include="Day23\Part1.fs" />
+    <Compile Include="Day23\Part2.fs" />
   </ItemGroup>
 
   <ItemGroup>
