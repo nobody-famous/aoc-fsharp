@@ -60,7 +60,7 @@ let buildGrid (cfg: Config) =
     grid
 
 let printGrid (grid: Grid) (target: G.Point) =
-    let (minPt, maxPt) = G.findBounds (grid.Keys |> Seq.toList)
+    let minPt, maxPt = G.findBounds (grid.Keys |> Seq.toList)
 
     for y in minPt.Y .. maxPt.Y do
         for x in minPt.X .. maxPt.X do
