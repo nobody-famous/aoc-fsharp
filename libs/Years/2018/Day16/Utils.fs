@@ -57,7 +57,7 @@ let parseSamples (lines: string array) =
 let skipBlanks ndx (lines: string array) =
     let rec loop n =
         match n with
-        | n when lines.[n].Length = 0 -> loop (n + 1)
+        | n when n < lines.Length && lines.[n].Length = 0 -> loop (n + 1)
         | _ -> n
 
     loop ndx
