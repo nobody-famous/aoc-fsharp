@@ -15,9 +15,13 @@
             "type": "shell",
             "command": "dotnet",
             "args": ["test", "-c", "release"],
-            "options": {
-                "cwd": "${workspaceFolder}/test/2018/Day16"
-            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run One Test",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["test", "-c", "release", "--filter", "FullyQualifiedName~Aoc.Year2018.Test.Day1"],
             "problemMatcher": []
         },
         {
